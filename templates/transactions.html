@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Transactions
+{% endblock %}
+
+{% block main %}
+    <h2>Transactions</h2>
+    <table class = "table table">
+        <thead class = "thead-light">
+            <tr>
+                <th>Date</th>
+                <th>Document Type</th>
+                <th>Document Number</th>
+                <th>SKU</th>
+                <th>Volume</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for trade in trades %}
+            <tr>
+                <td>{{ trade.DATE }}</td>
+                <td>{{ trade.TYPE }}</td>
+                <td>{{ trade.DCO }}</td>
+                <td>{{ trade.SKU }}</td>
+                <td>{{ trade.VOLUME }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

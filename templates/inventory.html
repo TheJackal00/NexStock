@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Inventory
+{% endblock %}
+
+{% block main %}
+    <h2>Inventory</h2>
+    <table class = "table table">
+        <thead class = "thead-light">
+            <tr>
+                <th>SKU</th>
+                <th>Expiration</th>
+                <th>Name</th>
+                <th>DAY</th>
+                <th>Volume</th>
+                <th>Expired</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stock %}
+            <tr>
+                <td>{{ item.SKU }}</td>
+                <td>{{ item.EXPIRATION }}</td>
+                <td>{{ item.NAME }}</td>
+                <td>{{ item.DAY }}</td>
+                <td>{{ item.VOLUME }}</td>
+                <td>{{ item.EXPIRED }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

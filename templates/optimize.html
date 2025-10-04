@@ -1,0 +1,501 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Optimize
+{% endblock %}
+
+{% block main %}
+
+<div class="container-fluid py-4">
+    <h1 class="display-4 text-center text-dark mb-5">
+        Purchase Itinerary Optimization
+        <span class="badge bg-info">ILP</span>
+    </h1>
+
+    <!-- Optimization trigger button -->
+    <form method="post" class="text-center mb-4">
+        <button 
+            type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-black font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+            <i class="bi bi-lightning-charge"></i> Run Optimization
+        </button>
+    </form>
+
+    <!-- Loading spinner -->
+    <div id="loading-spinner" class="mt-8 hidden animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto"></div>
+
+    {% if error %}
+        <div class="alert alert-danger" role="alert">
+            <h6 class="alert-heading">{{ error }}</h6>
+            <p class="mb-0">
+                <a href="/simulate" class="alert-link">Run a simulation first</a>
+            </p>
+        </div>
+    {% elif all_optimizations %}
+        <!-- Summary Dashboard (without Optimized Strategy Cost) -->
+        <div class="card mb-4 border">
+            <div class="card-body">
+                <h2 class="card-title h4 mb-3">
+                    <i class="bi bi-graph-up-arrow"></i> Optimization Summary
+                </h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mx-auto" style="max-width:400px;">
+                            <div class="row mb-3">
+                                <div class="col text-center">
+                                    <div class="display-6 fw-bold text-primary">{{ summary.total_skus }}</div>
+                                    <div><small class="text-muted">SKUs Optimized</small></div>
+                                </div>
+                                <div class="col text-center">
+                                    <div class="display-6 fw-bold text-secondary">{{ summary.simulation_days }}</div>
+                                    <div><small class="text-muted">Days Planned</small></div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col text-center">
+                                    <div class="h4 fw-bold text-success">${{ "%.0f"|format(summary.avg_service_level|default(0)) }}%</div>
+                                    <div><small class="text-muted">Avg Service Level</small></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mt-3 mt-md-0">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle"></i> ILP Optimization</h6>
+                            <p class="small mb-0">Results are calculated using Integer Linear Programming (ILP) considering:
+                                <ul class="small mb-0">
+                                    <li>Shipping costs ($100 per order)</li>
+                                    <li>Minimum order size: 100 units</li>
+                                    <li>Stockout penalty: 2× product margin</li>
+                                    <li>Holding cost: 1% of unit cost per day</li>
+                                </ul>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Results -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-funnel"></i> Filter Results</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <select class="form-select form-select-sm" id="sku-filter">
+                            <option value="all">All SKUs</option>
+                            {% for sku in all_optimizations.keys() %}
+                                <option value="{{ sku }}">{{ sku }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <select class="form-select form-select-sm" id="sort-by">
+                            <option value="cost">Sort by Cost</option>
+                            <option value="orders">Sort by Orders</option>
+                            <option value="service">Sort by Service Level</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-sm btn-outline-secondary w-100" id="expand-all">
+                            <i class="bi bi-arrows-expand"></i> Expand All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optimization Results: Loop through SKUs and their 10 runs -->
+        <div id="optimization-results">
+            {% for sku, runs in all_optimizations.items() %}
+                <div class="card mb-5">
+                    <div class="card-header">
+                        <h3>SKU: {{ sku }} 
+                            {% if runs[0].result.product_name and runs[0].result.product_name != 'Unknown' %}
+                                <span class="text-muted">({{ runs[0].result.product_name }})</span>
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="accordion-{{ sku }}">
+                            {% for run in runs %}
+                                <div class="accordion-item mb-3">
+                                    <h2 class="accordion-header" id="heading-{{ sku }}-{{ run.iteration }}">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ sku }}-{{ run.iteration }}" aria-expanded="false" aria-controls="collapse-{{ sku }}-{{ run.iteration }}">
+                                            Iteration {{ run.iteration }} &mdash; Cost: ${{ "%.0f"|format(run.result.optimized_strategy.total_cost) }}, Orders: {{ run.result.optimized_strategy.total_orders }}, Service Level: {{ run.result.optimized_strategy.service_level }}%
+                                        </button>
+                                    </h2>
+                                    <div id="collapse-{{ sku }}-{{ run.iteration }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ sku }}-{{ run.iteration }}" data-bs-parent="#accordion-{{ sku }}">
+                                        <div class="accordion-body">
+                                            <div class="row mb-4">
+                                                <!-- Order Details -->
+                                                <div class="col-lg-6 mb-4">
+                                                    <div class="card bg-primary bg-opacity-10 h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title text-primary">
+                                                                <i class="bi bi-cart3"></i> Order Details
+                                                            </h6>
+                                                            <div class="row g-2">
+                                                                <div class="col-6">
+                                                                    <small class="text-primary">Total Orders:</small>
+                                                                    <div class="fw-semibold">{{ run.result.optimized_strategy.total_orders }}</div>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <small class="text-primary">Total Quantity:</small>
+                                                                    <div class="fw-semibold">{{ run.result.optimized_strategy.total_quantity_ordered }}</div>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <small class="text-primary">Avg Inventory:</small>
+                                                                    <div class="fw-semibold">{{ run.result.optimized_strategy.average_inventory }} units</div>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <small class="text-primary">Stockout Days:</small>
+                                                                    <div class="fw-semibold {% if run.result.optimized_strategy.stockout_days > 0 %}text-warning{% else %}text-success{% endif %}">
+                                                                        {{ run.result.optimized_strategy.stockout_days }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Performance Metrics -->
+                                                <div class="col-lg-6 mb-4">
+                                                    <div class="card bg-success bg-opacity-10 h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title text-success">
+                                                                <i class="bi bi-graph-up"></i> Performance
+                                                            </h6>
+                                                            <div class="row g-2">
+                                                                <div class="col-6">
+                                                                    <small class="text-success">Service Level:</small>
+                                                                    <div class="fw-semibold text-success">{{ run.result.optimized_strategy.service_level }}%</div>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <small class="text-success">Optimized Cost:</small>
+                                                                    <div class="fw-semibold text-success">${{ "%.0f"|format(run.result.optimized_strategy.total_cost) }}</div>
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <small class="text-success">Strategy Status:</small>
+                                                                    <div class="d-flex align-items-center">
+                                                                        <div class="progress flex-grow-1" style="height: 8px;">
+                                                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                                                 style="width: {{ run.result.optimized_strategy.service_level }}%" 
+                                                                                 aria-valuenow="{{ run.result.optimized_strategy.service_level }}" 
+                                                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                                                        </div>
+                                                                        <span class="ms-2 fw-semibold small">
+                                                                            {% if run.result.optimized_strategy.service_level > 95 %}
+                                                                                Optimal
+                                                                            {% elif run.result.optimized_strategy.service_level > 90 %}
+                                                                                Good
+                                                                            {% elif run.result.optimized_strategy.service_level > 80 %}
+                                                                                Acceptable
+                                                                            {% else %}
+                                                                                Needs Improvement
+                                                                            {% endif %}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Purchase Schedule Table -->
+                                            <div class="card bg-warning bg-opacity-10">
+                                                <div class="card-header">
+                                                    <h6 class="mb-0">
+                                                        <i class="bi bi-calendar-check"></i>
+                                                        Purchase Schedule for Iteration {{ run.iteration }}
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm table-hover">
+                                                            <thead class="table-dark">
+                                                                <tr>
+                                                                    <th>Day</th>
+                                                                    <th>Order Qty</th>
+                                                                    <th>Delivery Day</th>
+                                                                    <th>Status</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for day_index in range(run.result.optimized_strategy.purchase_schedule|length) %}
+                                                                    {% set order = run.result.optimized_strategy.purchase_schedule[day_index] %}
+                                                                    {% if order.quantity > 0 %}
+                                                                    <tr class="table-warning">
+                                                                        <td><strong>{{ day_index + 1 }}</strong></td>
+                                                                        <td>
+                                                                            <span class="badge bg-primary">{{ order.quantity }} units</span>
+                                                                        </td>
+                                                                        <td>
+                                                                            {% if order.delivery_day is not none %}
+                                                                                Day {{ order.delivery_day + 1 }}
+                                                                                <small class="text-muted">({{ order.delivery_day - day_index }} days lead time)</small>
+                                                                            {% else %}
+                                                                                <span class="text-muted">N/A</span>
+                                                                            {% endif %}
+                                                                        </td>
+                                                                        <td>
+                                                                            <i class="bi bi-cart-plus text-success"></i>
+                                                                            <small class="text-success">Order Placed</small>
+                                                                        </td>
+                                                                    </tr>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    {% if run.result.optimized_strategy.total_orders == 0 %}
+                                                    <div class="text-center py-4">
+                                                        <i class="bi bi-info-circle text-muted" style="font-size: 2rem;"></i>
+                                                        <p class="text-muted mt-2">No orders needed for this SKU during this iteration</p>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <!-- Cost Breakdown -->
+                                            <div class="col-12">
+                                                <div class="card mt-4 bg-light">
+                                                    <div class="card-header">
+                                                        <h6 class="mb-0">
+                                                            <i class="bi bi-currency-dollar"></i> Cost Breakdown
+                                                        </h6>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-6 col-lg-3 mb-2">
+                                                                <small class="text-muted">Ordering Cost:</small>
+                                                                <div class="fw-semibold">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.ordering_cost|default(0)) }}</div>
+                                                            </div>
+                                                            <div class="col-6 col-lg-3 mb-2">
+                                                                <small class="text-muted">Purchase Cost:</small>
+                                                                <div class="fw-semibold">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.purchase_cost|default(0)) }}</div>
+                                                            </div>
+                                                            <div class="col-6 col-lg-3 mb-2">
+                                                                <small class="text-muted">Holding Cost:</small>
+                                                                <div class="fw-semibold">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.holding_cost|default(0)) }}</div>
+                                                            </div>
+                                                            <div class="col-6 col-lg-3 mb-2">
+                                                                <small class="text-muted">Stockout Cost:</small>
+                                                                <div class="fw-semibold text-danger">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.stockout_cost|default(0)) }}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="progress mt-2" style="height: 8px;">
+                                                            <div class="progress-bar bg-primary" style="width: {{ (run.result.optimized_strategy.cost_breakdown.ordering_cost / run.result.optimized_strategy.total_cost * 100)|default(0)|round|int }}%" title="Ordering"></div>
+                                                            <div class="progress-bar bg-secondary" style="width: {{ (run.result.optimized_strategy.cost_breakdown.purchase_cost / run.result.optimized_strategy.total_cost * 100)|default(0)|round|int }}%" title="Purchase"></div>
+                                                            <div class="progress-bar bg-success" style="width: {{ (run.result.optimized_strategy.cost_breakdown.holding_cost / run.result.optimized_strategy.total_cost * 100)|default(0)|round|int }}%" title="Holding"></div>
+                                                            <div class="progress-bar bg-danger" style="width: {{ (run.result.optimized_strategy.cost_breakdown.stockout_cost / run.result.optimized_strategy.total_cost * 100)|default(0)|round|int }}%" title="Stockout"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Safe element access function for error handling
+    function safeGetElement(id) {
+        const element = document.getElementById(id);
+        if (!element) {
+            console.warn(`Element with ID '${id}' not found`);
+        }
+        return element;
+    }
+
+    // Form submission handler to show the spinner
+    const form = document.querySelector('form');
+    const spinner = safeGetElement('loading-spinner');
+    
+    if (form && spinner) {
+        form.addEventListener('submit', function() {
+            spinner.classList.remove('hidden');
+            // Disable the button
+            const button = form.querySelector('button[type="submit"]');
+            if (button) {
+                button.disabled = true;
+                button.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        });
+    }
+    
+    // SKU filter with error handling
+    const skuFilter = safeGetElement('sku-filter');
+    if (skuFilter) {
+        skuFilter.addEventListener('change', function() {
+            try {
+                const selectedSku = this.value;
+                const skuCards = document.querySelectorAll('#optimization-results > .card');
+                
+                skuCards.forEach(card => {
+                    const heading = card.querySelector('h3');
+                    if (!heading) return;
+                    
+                    if (selectedSku === 'all' || heading.textContent.includes(selectedSku)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            } catch (e) {
+                console.error("Error filtering SKUs:", e);
+            }
+        });
+    }
+    
+    // Sort functionality with improved error handling
+    const sortBy = safeGetElement('sort-by');
+    if (sortBy) {
+        sortBy.addEventListener('change', function() {
+            try {
+                const sortValue = this.value;
+                const resultsContainer = document.getElementById('optimization-results');
+                if (!resultsContainer) return;
+                
+                const skuCards = Array.from(document.querySelectorAll('#optimization-results > .card'));
+                
+                if (!skuCards.length) return;
+                
+                skuCards.sort((a, b) => {
+                    try {
+                        let valueA = 0, valueB = 0;
+                        const buttonA = a.querySelector('.accordion-button');
+                        const buttonB = b.querySelector('.accordion-button');
+                        
+                        if (!buttonA || !buttonB) return 0;
+                        
+                        const textA = buttonA.textContent || '';
+                        const textB = buttonB.textContent || '';
+                        
+                        if (sortValue === 'cost') {
+                            const costMatchA = textA.match(/Cost: \$(\d+)/);
+                            const costMatchB = textB.match(/Cost: \$(\d+)/);
+                            valueA = costMatchA ? parseFloat(costMatchA[1]) : 0;
+                            valueB = costMatchB ? parseFloat(costMatchB[1]) : 0;
+                            return valueA - valueB; // Lower cost first
+                        } else if (sortValue === 'orders') {
+                            const ordersMatchA = textA.match(/Orders: (\d+)/);
+                            const ordersMatchB = textB.match(/Orders: (\d+)/);
+                            valueA = ordersMatchA ? parseInt(ordersMatchA[1]) : 0;
+                            valueB = ordersMatchB ? parseInt(ordersMatchB[1]) : 0;
+                            return valueB - valueA; // Higher orders first
+                        } else if (sortValue === 'service') {
+                            const serviceMatchA = textA.match(/Service Level: ([\d.]+)/);
+                            const serviceMatchB = textB.match(/Service Level: ([\d.]+)/);
+                            valueA = serviceMatchA ? parseFloat(serviceMatchA[1]) : 0;
+                            valueB = serviceMatchB ? parseFloat(serviceMatchB[1]) : 0;
+                            return valueB - valueA; // Higher service level first
+                        }
+                        return 0;
+                    } catch (e) {
+                        console.error("Error comparing items:", e);
+                        return 0;
+                    }
+                });
+                
+                // Re-append in the sorted order
+                skuCards.forEach(card => resultsContainer.appendChild(card));
+            } catch (e) {
+                console.error("Error sorting items:", e);
+            }
+        });
+    }
+    
+    // Expand all functionality with improved error handling
+    const expandAll = safeGetElement('expand-all');
+    if (expandAll) {
+        expandAll.addEventListener('click', function() {
+            try {
+                // Check if we're expanding or collapsing
+                const allButtons = document.querySelectorAll('.accordion-button.collapsed');
+                const isExpanding = allButtons.length > 0;
+                
+                if (isExpanding) {
+                    allButtons.forEach(button => button.click());
+                    this.innerHTML = '<i class="bi bi-arrows-collapse"></i> Collapse All';
+                } else {
+                    document.querySelectorAll('.accordion-button:not(.collapsed)').forEach(button => button.click());
+                    this.innerHTML = '<i class="bi bi-arrows-expand"></i> Expand All';
+                }
+            } catch (e) {
+                console.error("Error toggling accordion:", e);
+            }
+        });
+    }
+    
+    // Modified showSuccessMessage function with consistent English text and error handling
+    window.showSuccessMessage = function(message, totalRecords) {
+        try {
+            const resultsContainer = document.getElementById('results-container');
+            if (!resultsContainer) {
+                console.warn("Results container not found for success message");
+                return;
+            }
+            
+            // Create the success message div
+            const successDiv = document.createElement('div');
+            successDiv.className = "bg-green-50 border border-green-200 rounded-lg p-4 mb-6";
+            
+            // Number of simulated days (with error handling)
+            let numDays = 30; // Default value
+            const numSimulationsInput = document.getElementById('num-simulations');
+            if (numSimulationsInput) {
+                numDays = parseInt(numSimulationsInput.value, 10) || 30;
+            }
+            
+            successDiv.innerHTML = `
+                <p class="text-green-700 text-center font-medium">
+                    ✅ ${message}
+                </p>
+                <p class="text-green-600 text-center text-sm mt-1">
+                    Processed: ${totalRecords} SKUs × ${numDays} days × 10 iterations = ${totalRecords * numDays * 10} records
+                </p>
+            `;
+            // Insert the message at the top, before the results
+            resultsContainer.prepend(successDiv);
+        } catch (e) {
+            console.error("Error showing success message:", e);
+        }
+    };
+    
+    // Add no-data check
+    const noData = !document.querySelector('#optimization-results > .card');
+    const errorMsg = document.querySelector('.alert-danger');
+    
+    if (noData && !errorMsg) {
+        // Add a message if there's no optimization data and no error message
+        const container = document.querySelector('.container-fluid');
+        if (container) {
+            const noDataMsg = document.createElement('div');
+            noDataMsg.className = "alert alert-warning text-center";
+            noDataMsg.innerHTML = `
+                <h5><i class="bi bi-exclamation-triangle"></i> No simulation data available</h5>
+                <p>Please run a simulation first to generate demand patterns.</p>
+                <a href="/simulate" class="btn btn-primary btn-sm mt-2">
+                    <i class="bi bi-calculator"></i> Run Simulation
+                </a>
+            `;
+            
+            // Insert after the spinner
+            if (spinner) {
+                spinner.insertAdjacentElement('afterend', noDataMsg);
+            } else {
+                container.appendChild(noDataMsg);
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

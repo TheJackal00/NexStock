@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Portafolio
+{% endblock %}
+
+{% block main %}
+    <h2>Portafolio</h2>
+    <table class = "table table">
+        <thead class = "thead-light">
+            <tr>
+                <th>SKU</th>
+                <th>Expiration (Years)</th>
+                <th>Type</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.SKU }}</td>
+                <td>{{ product.EXPIRATION/365 }}</td>
+                <td>{{ product.TYPE }}</td>
+                <td>{{ product.NAME }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
