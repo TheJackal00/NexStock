@@ -1217,4 +1217,5 @@ def debug_info():
 
 if __name__ == "__main__":
     # For development
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000)#   D e p l o y m e n t   v e r i f i c a t i o n   -   2 0 2 5 - 1 0 - 0 8   2 3 : 2 1 : 0 6  
+ 
