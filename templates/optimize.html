@@ -76,6 +76,184 @@
             </div>
         </div>
 
+        <!-- Detailed Cost Breakdown Summary -->
+        <div class="card mb-4 border">
+            <div class="card-body">
+                <h2 class="card-title h4 mb-3">
+                    <i class="bi bi-pie-chart"></i> Total Cost Breakdown
+                    <span class="badge bg-secondary">${{ "%.0f"|format(summary.cost_breakdown.total_cost|default(0)) }}</span>
+                </h2>
+                <div class="row">
+                    <!-- Cost Categories -->
+                    <div class="col-lg-8">
+                        <div class="row">
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card bg-primary bg-opacity-10 h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-truck display-6 text-primary mb-2"></i>
+                                        <h6 class="card-title text-primary">Ordering Cost</h6>
+                                        <div class="h4 fw-bold">${{ "%.0f"|format(summary.cost_breakdown.ordering_cost|default(0)) }}</div>
+                                        <small class="text-muted">{{ "%.1f"|format(summary.cost_percentages.ordering_cost|default(0)) }}% of total</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card bg-secondary bg-opacity-10 h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-cart-plus display-6 text-secondary mb-2"></i>
+                                        <h6 class="card-title text-secondary">Purchase Cost</h6>
+                                        <div class="h4 fw-bold">${{ "%.0f"|format(summary.cost_breakdown.purchase_cost|default(0)) }}</div>
+                                        <small class="text-muted">{{ "%.1f"|format(summary.cost_percentages.purchase_cost|default(0)) }}% of total</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card bg-success bg-opacity-10 h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-archive display-6 text-success mb-2"></i>
+                                        <h6 class="card-title text-success">Holding Cost</h6>
+                                        <div class="h4 fw-bold">${{ "%.0f"|format(summary.cost_breakdown.holding_cost|default(0)) }}</div>
+                                        <small class="text-muted">{{ "%.1f"|format(summary.cost_percentages.holding_cost|default(0)) }}% of total</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6 mb-3">
+                                <div class="card bg-danger bg-opacity-10 h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-exclamation-triangle display-6 text-danger mb-2"></i>
+                                        <h6 class="card-title text-danger">Stockout Cost</h6>
+                                        <div class="h4 fw-bold">${{ "%.0f"|format(summary.cost_breakdown.stockout_cost|default(0)) }}</div>
+                                        <small class="text-muted">{{ "%.1f"|format(summary.cost_percentages.stockout_cost|default(0)) }}% of total</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6 mb-3">
+                                <div class="card bg-warning bg-opacity-10 h-100">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-trash display-6 text-warning mb-2"></i>
+                                        <h6 class="card-title text-warning">Waste Cost</h6>
+                                        <div class="h4 fw-bold">${{ "%.0f"|format(summary.cost_breakdown.waste_cost|default(0)) }}</div>
+                                        <small class="text-muted">{{ "%.1f"|format(summary.cost_percentages.waste_cost|default(0)) }}% of total</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Visual Progress Bar -->
+                    <div class="col-lg-4">
+                        <div class="card bg-light h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">Cost Distribution</h6>
+                                <div class="progress mb-3" style="height: 30px;">
+                                    <div class="progress-bar bg-primary" style="width: {{ summary.cost_percentages.ordering_cost|default(0) }}%" title="Ordering: {{ "%.1f"|format(summary.cost_percentages.ordering_cost|default(0)) }}%"></div>
+                                    <div class="progress-bar bg-secondary" style="width: {{ summary.cost_percentages.purchase_cost|default(0) }}%" title="Purchase: {{ "%.1f"|format(summary.cost_percentages.purchase_cost|default(0)) }}%"></div>
+                                    <div class="progress-bar bg-success" style="width: {{ summary.cost_percentages.holding_cost|default(0) }}%" title="Holding: {{ "%.1f"|format(summary.cost_percentages.holding_cost|default(0)) }}%"></div>
+                                    <div class="progress-bar bg-danger" style="width: {{ summary.cost_percentages.stockout_cost|default(0) }}%" title="Stockout: {{ "%.1f"|format(summary.cost_percentages.stockout_cost|default(0)) }}%"></div>
+                                    <div class="progress-bar bg-warning" style="width: {{ summary.cost_percentages.waste_cost|default(0) }}%" title="Waste: {{ "%.1f"|format(summary.cost_percentages.waste_cost|default(0)) }}%"></div>
+                                </div>
+                                <div class="small">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span><i class="bi bi-square-fill text-primary"></i> Ordering</span>
+                                        <span class="fw-bold">{{ "%.1f"|format(summary.cost_percentages.ordering_cost|default(0)) }}%</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span><i class="bi bi-square-fill text-secondary"></i> Purchase</span>
+                                        <span class="fw-bold">{{ "%.1f"|format(summary.cost_percentages.purchase_cost|default(0)) }}%</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span><i class="bi bi-square-fill text-success"></i> Holding</span>
+                                        <span class="fw-bold">{{ "%.1f"|format(summary.cost_percentages.holding_cost|default(0)) }}%</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span><i class="bi bi-square-fill text-danger"></i> Stockout</span>
+                                        <span class="fw-bold">{{ "%.1f"|format(summary.cost_percentages.stockout_cost|default(0)) }}%</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span><i class="bi bi-square-fill text-warning"></i> Waste</span>
+                                        <span class="fw-bold">{{ "%.1f"|format(summary.cost_percentages.waste_cost|default(0)) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Analysis Insights -->
+        <div class="card mb-4 border">
+            <div class="card-body">
+                <h2 class="card-title h4 mb-3">
+                    <i class="bi bi-lightbulb"></i> Cost Analysis Insights
+                </h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-info bg-opacity-10 h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-info">
+                                    <i class="bi bi-graph-up"></i> Cost Distribution Analysis
+                                </h6>
+                                <div class="small">
+                                    {% if summary.cost_percentages.purchase_cost > 60 %}
+                                        <div class="alert alert-info alert-sm mb-2">
+                                            <strong>Purchase-Heavy:</strong> {{ "%.1f"|format(summary.cost_percentages.purchase_cost) }}% of costs are from purchases. Consider negotiating better unit prices or volume discounts.
+                                        </div>
+                                    {% endif %}
+                                    {% if summary.cost_percentages.holding_cost > 20 %}
+                                        <div class="alert alert-warning alert-sm mb-2">
+                                            <strong>High Holding Costs:</strong> {{ "%.1f"|format(summary.cost_percentages.holding_cost) }}% from storage. Consider reducing safety stock or improving demand forecasting.
+                                        </div>
+                                    {% endif %}
+                                    {% if summary.cost_percentages.stockout_cost > 15 %}
+                                        <div class="alert alert-danger alert-sm mb-2">
+                                            <strong>Stockout Risk:</strong> {{ "%.1f"|format(summary.cost_percentages.stockout_cost) }}% lost to stockouts. Consider increasing safety stock or improving lead time reliability.
+                                        </div>
+                                    {% endif %}
+                                    {% if summary.cost_percentages.waste_cost > 10 %}
+                                        <div class="alert alert-warning alert-sm mb-2">
+                                            <strong>Waste Concern:</strong> {{ "%.1f"|format(summary.cost_percentages.waste_cost) }}% lost to expiration. Consider reducing order quantities or improving demand velocity.
+                                        </div>
+                                    {% endif %}
+                                    {% if summary.cost_percentages.ordering_cost > 25 %}
+                                        <div class="alert alert-primary alert-sm mb-2">
+                                            <strong>Frequent Orders:</strong> {{ "%.1f"|format(summary.cost_percentages.ordering_cost) }}% from ordering costs. Consider larger, less frequent orders to reduce transaction costs.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-success bg-opacity-10 h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-success">
+                                    <i class="bi bi-check-circle"></i> Optimization Summary
+                                </h6>
+                                <div class="row text-center">
+                                    <div class="col-6 mb-2">
+                                        <div class="fw-bold h5 text-success">${{ "%.0f"|format(summary.total_savings) }}</div>
+                                        <small class="text-muted">Estimated Savings</small>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <div class="fw-bold h5 text-info">{{ summary.total_iterations }}</div>
+                                        <small class="text-muted">Scenarios Analyzed</small>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="progress mb-2" style="height: 20px;">
+                                            <div class="progress-bar bg-success" style="width: {{ summary.avg_service_level }}%" role="progressbar">
+                                                {{ "%.1f"|format(summary.avg_service_level) }}%
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">Average Service Level</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Filter Results -->
         <div class="card mb-4">
             <div class="card-body">
@@ -265,22 +443,67 @@
                                                         </h6>
                                                     </div>
                                                     <div class="card-body">
+                                                        <!-- Total Cost Display -->
+                                                        <div class="row mb-3">
+                                                            <div class="col-12 text-center">
+                                                                <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                                                    <h5 class="mb-1">Total Optimized Cost</h5>
+                                                                    <div class="display-6 fw-bold text-primary">${{ "%.0f"|format(run.result.optimized_strategy.total_cost) }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <!-- Cost Components -->
                                                         <div class="row">
                                                             <div class="col-6 col-lg-3 mb-2">
-                                                                <small class="text-muted">Ordering Cost:</small>
-                                                                <div class="fw-semibold">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.ordering_cost|default(0)) }}</div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <i class="bi bi-truck text-primary me-2"></i>
+                                                                    <div>
+                                                                        <small class="text-muted">Ordering Cost:</small>
+                                                                        <div class="fw-semibold">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.ordering_cost|default(0)) }}</div>
+                                                                        <small class="text-primary">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.ordering_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</small>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                             <div class="col-6 col-lg-3 mb-2">
-                                                                <small class="text-muted">Purchase Cost:</small>
-                                                                <div class="fw-semibold">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.purchase_cost|default(0)) }}</div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <i class="bi bi-cart-plus text-secondary me-2"></i>
+                                                                    <div>
+                                                                        <small class="text-muted">Purchase Cost:</small>
+                                                                        <div class="fw-semibold">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.purchase_cost|default(0)) }}</div>
+                                                                        <small class="text-secondary">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.purchase_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</small>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                             <div class="col-6 col-lg-3 mb-2">
-                                                                <small class="text-muted">Holding Cost:</small>
-                                                                <div class="fw-semibold">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.holding_cost|default(0)) }}</div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <i class="bi bi-archive text-success me-2"></i>
+                                                                    <div>
+                                                                        <small class="text-muted">Holding Cost:</small>
+                                                                        <div class="fw-semibold">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.holding_cost|default(0)) }}</div>
+                                                                        <small class="text-success">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.holding_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</small>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                             <div class="col-6 col-lg-3 mb-2">
-                                                                <small class="text-muted">Stockout Cost:</small>
-                                                                <div class="fw-semibold text-danger">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.stockout_cost|default(0)) }}</div>
+                                                                <div class="d-flex align-items-center">
+                                                                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                                                                    <div>
+                                                                        <small class="text-muted">Stockout Cost:</small>
+                                                                        <div class="fw-semibold text-danger">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.stockout_cost|default(0)) }}</div>
+                                                                        <small class="text-danger">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.stockout_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-6 col-lg-3 mb-2">
+                                                                <div class="d-flex align-items-center">
+                                                                    <i class="bi bi-trash text-warning me-2"></i>
+                                                                    <div>
+                                                                        <small class="text-muted">Waste Cost:</small>
+                                                                        <div class="fw-semibold text-warning">${{ "%.0f"|format(run.result.optimized_strategy.cost_breakdown.waste_cost|default(0)) }}</div>
+                                                                        <small class="text-warning">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.waste_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</small>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div class="progress mt-2" style="height: 8px;">
@@ -288,6 +511,7 @@
                                                             <div class="progress-bar bg-secondary" style="width: {{ (run.result.optimized_strategy.cost_breakdown.purchase_cost / run.result.optimized_strategy.total_cost * 100)|default(0)|round|int }}%" title="Purchase"></div>
                                                             <div class="progress-bar bg-success" style="width: {{ (run.result.optimized_strategy.cost_breakdown.holding_cost / run.result.optimized_strategy.total_cost * 100)|default(0)|round|int }}%" title="Holding"></div>
                                                             <div class="progress-bar bg-danger" style="width: {{ (run.result.optimized_strategy.cost_breakdown.stockout_cost / run.result.optimized_strategy.total_cost * 100)|default(0)|round|int }}%" title="Stockout"></div>
+                                                            <div class="progress-bar bg-warning" style="width: {{ (run.result.optimized_strategy.cost_breakdown.waste_cost / run.result.optimized_strategy.total_cost * 100)|default(0)|round|int }}%" title="Waste"></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -470,32 +694,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    // Add no-data check
-    const noData = !document.querySelector('#optimization-results > .card');
-    const errorMsg = document.querySelector('.alert-danger');
-    
-    if (noData && !errorMsg) {
-        // Add a message if there's no optimization data and no error message
-        const container = document.querySelector('.container-fluid');
-        if (container) {
-            const noDataMsg = document.createElement('div');
-            noDataMsg.className = "alert alert-warning text-center";
-            noDataMsg.innerHTML = `
-                <h5><i class="bi bi-exclamation-triangle"></i> No simulation data available</h5>
-                <p>Please run a simulation first to generate demand patterns.</p>
-                <a href="/simulate" class="btn btn-primary btn-sm mt-2">
-                    <i class="bi bi-calculator"></i> Run Simulation
-                </a>
-            `;
-            
-            // Insert after the spinner
-            if (spinner) {
-                spinner.insertAdjacentElement('afterend', noDataMsg);
-            } else {
-                container.appendChild(noDataMsg);
-            }
-        }
-    }
+    // Only show no-data message if there's an actual error from the backend
+    // The Python backend handles checking for simulation data properly
 });
 </script>
 {% endblock %}

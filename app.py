@@ -13,6 +13,9 @@ app = Flask(__name__)
 import os
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
+# NexStock - Advanced Inventory Management System
+# Version: 2.0.0 - Updated with GitHub integration
+
 DATABASE = "inventory.db"
 
 def get_db_connection():
@@ -78,6 +81,33 @@ def init_db():
     finally:
         conn.close()
 
+def get_product_info_safe(sku):
+    """Safely get product information, handling missing EXPIRATION column"""
+    try:
+        # Try to get product info with EXPIRATION column
+        product_info = execute_query("SELECT SKU, MARGIN, NAME, COST, EXPIRATION FROM products WHERE SKU = ?", sku)
+        if product_info:
+            return product_info[0]
+    except Exception:
+        # If EXPIRATION column doesn't exist, try without it
+        try:
+            product_info = execute_query("SELECT SKU, MARGIN, NAME, COST FROM products WHERE SKU = ?", sku)
+            if product_info:
+                result = dict(product_info[0])
+                result['EXPIRATION'] = 365  # Add default expiration
+                return result
+        except Exception as e:
+            print(f"Error getting product info for SKU {sku}: {e}")
+    
+    # Return default values if all fails
+    return {
+        'SKU': sku,
+        'MARGIN': 0.0,
+        'NAME': 'Unknown',
+        'COST': 10.0,
+        'EXPIRATION': 365
+    }
+
 
 @app.after_request
 def after_request(response):
@@ -117,8 +147,18 @@ def portafolio():
 
 @app.route("/inventory", methods=["GET", "POST"])
 def inventory():
-    stock = execute_query(
-        "SELECT p.SKU,p.NAME,i.EXPIRED,i.DAY,i.VOLUME,p.EXPIRATION FROM inventory AS i JOIN products AS p ON i.SKU = p.SKU;")
+    try:
+        # Try to query with EXPIRATION column first
+        stock = execute_query(
+            "SELECT p.SKU,p.NAME,i.EXPIRED,i.DAY,i.VOLUME,p.EXPIRATION FROM inventory AS i JOIN products AS p ON i.SKU = p.SKU;")
+    except Exception:
+        # If EXPIRATION column doesn't exist, query without it
+        stock = execute_query(
+            "SELECT p.SKU,p.NAME,i.EXPIRED,i.DAY,i.VOLUME FROM inventory AS i JOIN products AS p ON i.SKU = p.SKU;")
+        # Add default EXPIRATION value to each row
+        for row in stock:
+            row['EXPIRATION'] = 365  # Default to 1 year
+    
     return render_template("inventory.html", stock=stock)
 
 
@@ -147,18 +187,28 @@ def run_simulation():
         distribution = data.get('lead_time_distribution', 'normal')
         param1 = data.get('lead_time_param1', 7.0)
         param2 = data.get('lead_time_param2', 2.0)
+        num_iterations = data.get('num_iterations', 10)
+        waste_cost_rate = data.get('waste_cost_rate', 80.0)
 
         # Validate and convert inputs
         try:
             size = int(size)
             param1 = float(param1)
             param2 = float(param2)
+            num_iterations = int(num_iterations)
+            waste_cost_rate = float(waste_cost_rate)
 
             if size <= 0 or size > 1000:
                 return jsonify({"error": "Size must be between 1 and 1000"}), 400
 
             if distribution not in ['normal', 'uniform']:
                 return jsonify({"error": "Distribution must be 'normal' or 'uniform'"}), 400
+
+            if num_iterations < 1 or num_iterations > 20:
+                return jsonify({"error": "Number of iterations must be between 1 and 20"}), 400
+
+            if waste_cost_rate < 0 or waste_cost_rate > 100:
+                return jsonify({"error": "Waste cost rate must be between 0% and 100%"}), 400
 
         except (ValueError, TypeError):
             return jsonify({"error": "Invalid parameter values"}), 400
@@ -180,10 +230,9 @@ def run_simulation():
 
         # Process simulations
         try:
-            NUM_ITERATIONS = 10
             all_simulation_inserts = []
 
-            for iteration in range(1, NUM_ITERATIONS + 1):
+            for iteration in range(1, num_iterations + 1):
                 simulation_inserts = []
                 
 
@@ -198,12 +247,15 @@ def run_simulation():
 
                     lead_times = np.round(lead_times).astype(int).tolist()    
 
-                    # Get product information including margin
-                    product_info = execute_query("SELECT SKU, MARGIN, NAME FROM products WHERE SKU = ?", sku)
-                    margin = float(product_info[0]["MARGIN"]) if product_info and product_info[0]["MARGIN"] else 0.0
-                    product_name = product_info[0]["NAME"] if product_info else "Unknown"
+                    # Get product information including margin, cost, and expiration
+                    product_info = get_product_info_safe(sku)
+                    
+                    margin = float(product_info.get("MARGIN", 0.0))
+                    unit_cost = float(product_info.get("COST", 10.0))
+                    product_name = product_info.get("NAME", "Unknown")
+                    expiration_days = int(product_info.get("EXPIRATION", 365))
 
-                    print(f"SKU {sku} ({product_name}): Margin = {margin}", flush=True)
+                    print(f"SKU {sku} ({product_name}): Margin = {margin}, Cost = {unit_cost}, Expires in {expiration_days} days", flush=True)
 
                     # Get initial inventory for this SKU
                     initial_inventory = execute_query(
@@ -233,13 +285,56 @@ def run_simulation():
                     demand_array = np.maximum(demand_array, 0)
                     demand_integers = np.round(demand_array).astype(int).tolist()
 
-                    # Calculate running stock levels
-                    current_stock = initial_stock
+                    # Initialize inventory tracking with age
+                    # Each inventory item has [quantity, age_in_days]
+                    inventory_batches = [[initial_stock, 0]] if initial_stock > 0 else []
                     stock_levels = []
+                    total_waste_cost = 0.0
+                    total_waste_quantity = 0.0
 
-                    for daily_demand in demand_integers:
-                        stock_levels.append(round(current_stock, 2))  # Save BEFORE subtracting demand
-                        current_stock -= daily_demand
+                    for day_idx, daily_demand in enumerate(demand_integers):
+                        # Age all inventory batches by 1 day
+                        for batch in inventory_batches:
+                            batch[1] += 1
+                        
+                        # Remove expired inventory and calculate waste cost
+                        expired_batches = []
+                        remaining_batches = []
+                        
+                        for batch in inventory_batches:
+                            if batch[1] >= expiration_days:  # Product has expired
+                                expired_batches.append(batch)
+                                waste_quantity = batch[0]
+                                waste_cost = waste_quantity * unit_cost * (waste_cost_rate / 100.0)
+                                total_waste_cost += waste_cost
+                                total_waste_quantity += waste_quantity
+                            else:
+                                remaining_batches.append(batch)
+                        
+                        inventory_batches = remaining_batches
+                        
+                        # Calculate current stock level after removing expired items
+                        current_stock = sum(batch[0] for batch in inventory_batches)
+                        stock_levels.append(round(current_stock, 2))
+                        
+                        # Satisfy demand using FIFO (oldest first)
+                        remaining_demand = daily_demand
+                        new_batches = []
+                        
+                        for batch in inventory_batches:
+                            if remaining_demand <= 0:
+                                new_batches.append(batch)
+                            elif batch[0] <= remaining_demand:
+                                remaining_demand -= batch[0]
+                                # This batch is completely consumed
+                            else:
+                                # Partial consumption of this batch
+                                batch[0] -= remaining_demand
+                                remaining_demand = 0
+                                new_batches.append(batch)
+                        
+                        inventory_batches = new_batches
+                        current_stock = sum(batch[0] for batch in inventory_batches)
 
                     # Calculate total unfulfilled demand and lost profit for statistics
                     total_unfulfilled = 0
@@ -257,6 +352,9 @@ def run_simulation():
                         "lead_time_values": lead_times,
                         "stock_levels": stock_levels,
                         "final_stock": round(float(stock_levels[-1]), 2) if stock_levels else round(float(initial_stock), 2),
+                        "waste_cost": round(float(total_waste_cost), 2),
+                        "waste_quantity": round(float(total_waste_quantity), 2),
+                        "expiration_days": expiration_days,
                         "stats": {
                             "min_demand": int(min(demand_integers)) if demand_integers else 0,
                             "max_demand": int(max(demand_integers)) if demand_integers else 0,
@@ -334,7 +432,9 @@ def run_simulation():
                 "mean_demand": [],
                 "min_stock": [],
                 "max_stock": [],
-                "days_negative": []
+                "days_negative": [],
+                "waste_cost": [],
+                "waste_quantity": []
             })
 
             for r in results:
@@ -355,6 +455,8 @@ def run_simulation():
                 sku_stats[sku]["min_stock"].append(r["stats"]["min_stock"])
                 sku_stats[sku]["max_stock"].append(r["stats"]["max_stock"])
                 sku_stats[sku]["days_negative"].append(r["stats"]["days_negative"])
+                sku_stats[sku]["waste_cost"].append(r["waste_cost"])
+                sku_stats[sku]["waste_quantity"].append(r["waste_quantity"])
 
             # Calcula estadísticas agregadas por SKU
             aggregated_results = []
@@ -374,6 +476,10 @@ def run_simulation():
                     "lead_time_distribution": distribution,
                     "lead_time_param1": param1,
                     "lead_time_param2": param2,
+                    "waste_cost_rate": waste_cost_rate,
+                    "expiration_days": data["expiration_days"] if "expiration_days" in data else 365,
+                    "total_waste_cost": round(float(np.sum(data["waste_cost"])), 2) if data["waste_cost"] else 0,
+                    "total_waste_quantity": round(float(np.sum(data["waste_quantity"])), 2) if data["waste_quantity"] else 0,
                     # Estadísticas globales sobre los 10 runs
                     "min_demand": int(np.min(all_demands)) if all_demands else 0,
                     "avg_demand": float(np.mean(all_demands)) if all_demands else 0,
@@ -391,10 +497,11 @@ def run_simulation():
 
             return jsonify({
                 "status": "success",
-                "message": f"Generated simulation data for {len(aggregated_results)} SKUs (aggregated over {NUM_ITERATIONS} iterations)",
+                "message": f"Generated simulation data for {len(aggregated_results)} SKUs (aggregated over {num_iterations} iterations)",
                 "total_records": len(aggregated_results),
                 "simulation_size": size,
                 "lead_time_distribution": distribution,
+                "num_iterations": num_iterations,
                 "results": aggregated_results
             })
 
@@ -443,9 +550,12 @@ def optimization():
         holding_cost_rate = 0.01  # 1% del valor del producto por día de almacenamiento
         stockout_penalty_multiplier = 2.0  # Multiplicador sobre el margen para penalizar stockouts
 
-        # Get product info
+        # Get product info safely
         products = execute_query("SELECT SKU, NAME, MARGIN, COST FROM products")
-        product_info = {prod['SKU']: prod for prod in products}
+        product_info = {}
+        for prod in products:
+            # Use the safe function to get complete product info including EXPIRATION
+            product_info[prod['SKU']] = get_product_info_safe(prod['SKU'])
 
         # Get all SKUs
         all_skus = [prod['SKU'] for prod in products]
@@ -453,9 +563,13 @@ def optimization():
         # Prepare results structure
         all_optimizations = {}
 
+        # Get the maximum iteration number from the database
+        max_iteration_result = execute_query("SELECT MAX(Iteration) as max_iter FROM Simulation")
+        max_iterations = max_iteration_result[0]['max_iter'] if max_iteration_result and max_iteration_result[0]['max_iter'] else 10
+
         for sku in all_skus:
             all_optimizations[sku] = []
-            for iteration in range(1, 11):
+            for iteration in range(1, max_iterations + 1):
                 # Get simulation data for this SKU and iteration
                 sim_rows = execute_query(
                     "SELECT * FROM Simulation WHERE SKU = ? AND Iteration = ? ORDER BY Count",
@@ -469,8 +583,9 @@ def optimization():
                 lead_times = [int(row['LEAD_TIME']) for row in sim_rows]
                 initial_stock = float(sim_rows[0]['STOCK']) + int(sim_rows[0]['DEMAND']) if sim_rows else 0
 
-                unit_cost = float(product_info[sku]['COST']) if product_info[sku]['COST'] else 10
-                margin = float(product_info[sku]['MARGIN']) if product_info[sku]['MARGIN'] else 0
+                unit_cost = float(product_info[sku].get('COST', 10))
+                margin = float(product_info[sku].get('MARGIN', 0))
+                expiration_days = int(product_info[sku].get('EXPIRATION', 365))
 
                 # Run optimization for this iteration
                 result = optimize_purchase_schedule(
@@ -483,7 +598,9 @@ def optimization():
                     shipping_cost=shipping_cost,
                     holding_cost_rate=holding_cost_rate,
                     stockout_penalty_multiplier=stockout_penalty_multiplier,
-                    simulation_days=len(demands)
+                    simulation_days=len(demands),
+                    expiration_days=expiration_days,
+                    waste_cost_rate=80.0  # Default waste cost rate for optimization
                 )
                 # Store result for this iteration
                 all_optimizations[sku].append({
@@ -496,28 +613,55 @@ def optimization():
         if total_optimizations == 0:
             return render_template("optimize.html", error="No optimization results generated. This could mean no simulation data was found or all simulations failed. Please run a new simulation first.")
 
-        # Calcular métricas para el resumen
+        # Calcular métricas para el resumen incluyendo desglose detallado de costos
         total_service_level = 0
         total_iterations = 0
         total_savings = 0
+        
+        # Inicializar acumuladores de costos
+        total_costs = {
+            'ordering_cost': 0,
+            'purchase_cost': 0,
+            'holding_cost': 0,
+            'stockout_cost': 0,
+            'waste_cost': 0,
+            'total_cost': 0
+        }
 
         for runs in all_optimizations.values():
             for run in runs:
                 total_service_level += run['result']['optimized_strategy']['service_level']
                 total_iterations += 1
+                
+                # Acumular costos por categoría
+                breakdown = run['result']['optimized_strategy']['cost_breakdown']
+                total_costs['ordering_cost'] += breakdown.get('ordering_cost', 0)
+                total_costs['purchase_cost'] += breakdown.get('purchase_cost', 0)
+                total_costs['holding_cost'] += breakdown.get('holding_cost', 0)
+                total_costs['stockout_cost'] += breakdown.get('stockout_cost', 0)
+                total_costs['waste_cost'] += breakdown.get('waste_cost', 0)
+                total_costs['total_cost'] += run['result']['optimized_strategy']['total_cost']
+                
                 # Estimación simplificada de ahorros (10% del costo de compra)
-                total_savings += run['result']['optimized_strategy']['cost_breakdown']['purchase_cost'] * 0.1
+                total_savings += breakdown.get('purchase_cost', 0) * 0.1
+
+        # Calcular porcentajes de cada tipo de costo
+        cost_percentages = {}
+        if total_costs['total_cost'] > 0:
+            for cost_type, amount in total_costs.items():
+                if cost_type != 'total_cost':
+                    cost_percentages[cost_type] = (amount / total_costs['total_cost']) * 100
 
         # Crear el resumen
         summary = {
             "total_skus": len([sku for sku, runs in all_optimizations.items() if runs]),
             "simulation_days": len(next(iter(all_optimizations.values()))[0]['result']['optimized_strategy']['purchase_schedule']) if all_optimizations else 0,
-            "optimized_total_cost": sum(
-                run['result']['optimized_strategy']['total_cost']
-                for runs in all_optimizations.values() for run in runs
-            ),
+            "optimized_total_cost": total_costs['total_cost'],
             "avg_service_level": total_service_level / total_iterations if total_iterations > 0 else 0,
-            "total_savings": total_savings
+            "total_savings": total_savings,
+            "cost_breakdown": total_costs,
+            "cost_percentages": cost_percentages,
+            "total_iterations": total_iterations
         }
 
         return render_template("optimize.html", all_optimizations=all_optimizations, summary=summary)
@@ -530,7 +674,8 @@ def optimization():
 
 
 def optimize_purchase_schedule(sku, demands, lead_times, initial_stock, unit_cost, margin,
-                             shipping_cost, holding_cost_rate, stockout_penalty_multiplier, simulation_days):
+                             shipping_cost, holding_cost_rate, stockout_penalty_multiplier, simulation_days,
+                             expiration_days=365, waste_cost_rate=80.0):
     """
     Optimiza cuando y cuánto pedir para un SKU usando Programación Lineal Entera (ILP).
     Retorna el plan de compras óptimo, minimizando costos totales.
@@ -545,6 +690,9 @@ def optimize_purchase_schedule(sku, demands, lead_times, initial_stock, unit_cos
     # Valor de penalización por stockout - usar el margen como costo de oportunidad
     stockout_cost = margin * stockout_penalty_multiplier
     
+    # Costo de merma por unidad expirada
+    waste_cost_per_unit = unit_cost * (waste_cost_rate / 100.0)
+    
     # Variables de decisión
     # x[t]: Cantidad a ordenar en el período t
     x = {t: LpVariable(f"order_{t}", lowBound=0, cat=LpInteger) for t in periods}
@@ -558,6 +706,9 @@ def optimize_purchase_schedule(sku, demands, lead_times, initial_stock, unit_cos
     # y[t]: Variable binaria, 1 si se hace un pedido en período t, 0 si no
     y = {t: LpVariable(f"order_placed_{t}", cat='Binary') for t in periods}
     
+    # w[t]: Cantidad de producto que expira en período t (waste)
+    w = {t: LpVariable(f"waste_{t}", lowBound=0) for t in periods}
+    
     # Función objetivo: minimizar costo total
     total_cost = (
         # Costo de compra
@@ -567,7 +718,9 @@ def optimize_purchase_schedule(sku, demands, lead_times, initial_stock, unit_cos
         # Costo de almacenamiento
         lpSum(i[t] * unit_cost * holding_cost_rate for t in periods) +
         # Penalización por demanda insatisfecha (usar margen como costo de oportunidad)
-        lpSum(s[t] * stockout_cost for t in periods)
+        lpSum(s[t] * stockout_cost for t in periods) +
+        # Costo por merma de productos expirados
+        lpSum(w[t] * waste_cost_per_unit for t in periods)
     )
     problem += total_cost
     
@@ -597,6 +750,16 @@ def optimize_purchase_schedule(sku, demands, lead_times, initial_stock, unit_cos
     total_shortage = lpSum(s[t] for t in periods)
     problem += total_shortage <= 0.15 * total_demand  # Máximo 15% de demanda insatisfecha
     
+    # Restricciones de merma simplificadas
+    # Aproximación: productos que llegan en el período t pueden expirar después de expiration_days
+    for t in periods:
+        if t + expiration_days < simulation_days:
+            # Parte del inventario ordenado en t puede expirar
+            expiry_factor = max(0, min(1, (simulation_days - t - expiration_days) / simulation_days))
+            problem += w[t] >= x[t] * expiry_factor * 0.1  # 10% mínimo de productos pueden expirar
+        else:
+            problem += w[t] == 0  # No hay tiempo suficiente para que expire
+    
     # Resolver el problema con límite de tiempo y gap de optimalidad
     solver = pulp.PULP_CBC_CMD(timeLimit=45, gapRel=0.05)  # 45 segundos máximo, 5% gap
     problem.solve(solver)
@@ -623,13 +786,14 @@ def optimize_purchase_schedule(sku, demands, lead_times, initial_stock, unit_cos
     purchase_cost = sum(unit_cost * x[t].value() for t in periods)
     holding_cost = sum(unit_cost * holding_cost_rate * i[t].value() for t in periods)
     stockout_cost_total = sum(stockout_cost * s[t].value() for t in periods)
+    waste_cost_total = sum(waste_cost_per_unit * w[t].value() for t in periods)
     
     return {
         'sku': sku,
         'product_name': 'Product',  # Puedes obtener este dato de la base de datos
         'optimized_strategy': {
             'purchase_schedule': purchase_schedule,
-            'total_cost': ordering_cost + purchase_cost + holding_cost + stockout_cost_total,
+            'total_cost': ordering_cost + purchase_cost + holding_cost + stockout_cost_total + waste_cost_total,
             'service_level': service_level,
             'total_orders': sum(1 for day in purchase_schedule if day['quantity'] > 0),
             'total_quantity_ordered': sum(day['quantity'] for day in purchase_schedule),
@@ -639,7 +803,8 @@ def optimize_purchase_schedule(sku, demands, lead_times, initial_stock, unit_cos
                 'ordering_cost': ordering_cost,
                 'purchase_cost': purchase_cost,
                 'holding_cost': holding_cost,
-                'stockout_cost': stockout_cost_total
+                'stockout_cost': stockout_cost_total,
+                'waste_cost': waste_cost_total
             }
         }
     }
@@ -764,7 +929,8 @@ def generate_jit_strategy(demands, lead_times, initial_stock):
 
 
 def calculate_strategy_cost(strategy, demands, lead_times, initial_stock, unit_cost,
-                          margin, shipping_cost, holding_cost_rate, stockout_penalty_multiplier):
+                          margin, shipping_cost, holding_cost_rate, stockout_penalty_multiplier,
+                          expiration_days=365, waste_cost_rate=80.0):
     """Calculate total cost for a given strategy."""
 
     # Simulate the strategy day by day
@@ -924,16 +1090,23 @@ def calculate_current_performance(demands, initial_stock, margin):
 def results():
     # Obtener información de productos
     products = execute_query("SELECT SKU, NAME, MARGIN, COST FROM products")
-    product_info = {str(prod['SKU']): prod for prod in products}
+    product_info = {}
+    for prod in products:
+        # Use the safe function to get complete product info including EXPIRATION
+        product_info[str(prod['SKU'])] = get_product_info_safe(prod['SKU'])
     all_skus = [str(prod['SKU']) for prod in products]
 
     # --- RECONSTRUIR best_strategies igual que en /optimize ---
+    # Get the maximum iteration number from the database
+    max_iteration_result = execute_query("SELECT MAX(Iteration) as max_iter FROM Simulation")
+    max_iterations = max_iteration_result[0]['max_iter'] if max_iteration_result and max_iteration_result[0]['max_iter'] else 10
+
     best_strategies = {}
     for sku in all_skus:
-        # Obtener las 10 simulaciones para este SKU
+        # Obtener todas las simulaciones disponibles para este SKU
         scenarios = []
         strategies = []
-        for iteration in range(1, 11):
+        for iteration in range(1, max_iterations + 1):
             sim_rows = execute_query(
                 "SELECT * FROM Simulation WHERE SKU = ? AND Iteration = ? ORDER BY Count",
                 sku, iteration
@@ -943,8 +1116,9 @@ def results():
             demands = [int(row['DEMAND']) for row in sim_rows]
             lead_times = [int(row['LEAD_TIME']) for row in sim_rows]
             initial_stock = float(sim_rows[0]['STOCK']) + int(sim_rows[0]['DEMAND']) if sim_rows else 0
-            unit_cost = float(product_info[sku]['COST']) if product_info[sku]['COST'] else 10
-            margin = float(product_info[sku]['MARGIN']) if product_info[sku]['MARGIN'] else 0
+            unit_cost = float(product_info[sku].get('COST', 10))
+            margin = float(product_info[sku].get('MARGIN', 0))
+            expiration_days = int(product_info[sku].get('EXPIRATION', 365))
             result = optimize_purchase_schedule(
                 sku=sku,
                 demands=demands,
@@ -955,7 +1129,9 @@ def results():
                 shipping_cost=100,
                 holding_cost_rate=0.02,
                 stockout_penalty_multiplier=2.0,
-                simulation_days=len(demands)
+                simulation_days=len(demands),
+                expiration_days=expiration_days,
+                waste_cost_rate=80.0
             )
             strategies.append(result['optimized_strategy']['purchase_schedule'])
             scenarios.append({
@@ -978,7 +1154,9 @@ def results():
                     margin,
                     100,
                     0.02,
-                    2.0
+                    2.0,
+                    expiration_days,
+                    80.0
                 )
             avg_cost = total_cost / len(scenarios) if scenarios else float('inf')
             avg_costs.append(avg_cost)

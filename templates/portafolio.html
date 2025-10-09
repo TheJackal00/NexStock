@@ -13,6 +13,8 @@
                 <th>Expiration (Years)</th>
                 <th>Type</th>
                 <th>Name</th>
+                <th>Price</th>
+                <th>Margin</th>
             </tr>
         </thead>
         <tbody>
@@ -22,6 +24,8 @@
                 <td>{{ product.EXPIRATION/365 }}</td>
                 <td>{{ product.TYPE }}</td>
                 <td>{{ product.NAME }}</td>
+                <td>{{ product.PRICE }}</td>
+                <td>{{ product.MARGIN }}</td>
             </tr>
             {% endfor %}
         </tbody>

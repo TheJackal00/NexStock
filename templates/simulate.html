@@ -69,6 +69,38 @@
             >
         </div>
 
+        <!-- Fifth input field (number of iterations) -->
+        <div class="flex flex-col items-center">
+            <label for="num-iterations" class="text-gray-700 font-semibold mb-2">
+                Number of iterations:
+            </label>
+            <input
+                type="number"
+                id="num-iterations"
+                value="10"
+                min="1"
+                max="20"
+                class="w-24 text-center rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+            >
+        </div>
+
+        <!-- Sixth input field (waste cost rate) -->
+        <div class="flex flex-col items-center">
+            <label for="waste-cost-rate" class="text-gray-700 font-semibold mb-2">
+                Waste cost rate (%):
+            </label>
+            <input
+                type="number"
+                id="waste-cost-rate"
+                value="80"
+                min="0"
+                max="100"
+                step="1"
+                class="w-24 text-center rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                title="Percentage of product cost charged as waste when expired"
+            >
+        </div>
+
         <button
             id="run-button"
             onclick="runSimulation()"
@@ -126,15 +158,31 @@
         const distributionSelect = document.getElementById('lead-time-distribution');
         const param1Input = document.getElementById('lead-time-param1');
         const param2Input = document.getElementById('lead-time-param2');
+        const numIterationsInput = document.getElementById('num-iterations');
+        const wasteCostRateInput = document.getElementById('waste-cost-rate');
 
         const numSimulations = parseInt(numSimulationsInput.value, 10);
         const distribution = distributionSelect.value;
         const param1 = parseFloat(param1Input.value);
         const param2 = parseFloat(param2Input.value);
+        const numIterations = parseInt(numIterationsInput.value, 10);
+        const wasteCostRate = parseFloat(wasteCostRateInput.value);
 
         // Validate first input (number of days)
         if (isNaN(numSimulations) || numSimulations <= 0) {
             showError('Please enter a valid number of days (greater than 0).');
+            return;
+        }
+
+        // Validate number of iterations
+        if (isNaN(numIterations) || numIterations < 1 || numIterations > 20) {
+            showError('Please enter a valid number of iterations (between 1 and 20).');
+            return;
+        }
+
+        // Validate waste cost rate
+        if (isNaN(wasteCostRate) || wasteCostRate < 0 || wasteCostRate > 100) {
+            showError('Please enter a valid waste cost rate (between 0% and 100%).');
             return;
         }
 
@@ -189,7 +237,9 @@
                     size: numSimulations,
                     lead_time_distribution: distribution,
                     lead_time_param1: param1,
-                    lead_time_param2: param2
+                    lead_time_param2: param2,
+                    num_iterations: numIterations,
+                    waste_cost_rate: wasteCostRate
                 })
             });
 
@@ -281,17 +331,31 @@
                 <div>
                     <div class="h5 fw-bold text-primary mb-2">Simulation Output (10 runs)</div>
                     <div class="row text-center mb-2 py-2 bg-light rounded">
-                        <div class="col-4 border-end">
+                        <div class="col-3 border-end">
                             <div class="small text-secondary">Min Demand</div>
                             <div class="fw-bold text-dark">${item.min_demand}</div>
                         </div>
-                        <div class="col-4 border-end">
+                        <div class="col-3 border-end">
                             <div class="small text-secondary">Avg Demand</div>
                             <div class="fw-bold text-dark">${typeof item.avg_demand === 'number' ? item.avg_demand.toFixed(1) : 'N/A'}</div>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3 border-end">
                             <div class="small text-secondary">Max Demand</div>
                             <div class="fw-bold text-dark">${item.max_demand}</div>
+                        </div>
+                        <div class="col-3">
+                            <div class="small text-secondary">Expires (days)</div>
+                            <div class="fw-bold text-dark">${item.expiration_days || 'N/A'}</div>
+                        </div>
+                    </div>
+                    <div class="row text-center mb-2 py-2 bg-orange-50 rounded border border-orange-200">
+                        <div class="col-6 border-end">
+                            <div class="small text-orange-600">Total Waste Cost</div>
+                            <div class="fw-bold text-orange-800">$${(item.total_waste_cost || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="small text-orange-600">Waste Quantity</div>
+                            <div class="fw-bold text-orange-800">${(item.total_waste_quantity || 0).toFixed(1)} units</div>
                         </div>
                     </div>
                 </div>
@@ -315,15 +379,16 @@
         const successDiv = document.createElement('div');
         successDiv.className = "bg-green-50 border border-green-200 rounded-lg p-4 mb-6";
         
-        // Number of simulated days
+        // Number of simulated days and iterations
         const numDays = parseInt(document.getElementById('num-simulations').value, 10);
+        const numIterations = parseInt(document.getElementById('num-iterations').value, 10);
         
         successDiv.innerHTML = `
             <p class="text-green-700 text-center font-medium">
                 ✅ ${message}
             </p>
             <p class="text-green-600 text-center text-sm mt-1">
-                Processed: ${totalRecords} SKUs × ${numDays} days × 10 iterations = ${totalRecords * numDays * 10} records
+                Processed: ${totalRecords} SKUs × ${numDays} days × ${numIterations} iterations = ${totalRecords * numDays * numIterations} records
             </p>
         `;
         // Insert the message at the top, before the results
