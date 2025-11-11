@@ -1,123 +1,147 @@
 {% extends "layout.html" %}
 
-{% block title %}
-    Simulate
-{% endblock %}
+{% block title %}Simulation - NexStock{% endblock %}
+
+{% block page_title %}Simulation{% endblock %}
+{% block page_description %}Monte Carlo simulation for inventory optimization{% endblock %}
 
 {% block main %}
-
-<div class="container mx-auto p-4 max-w-4xl font-sans">
-    <h1 class="text-4xl font-bold text-center text-gray-800 my-8">Run Simulation</h1>
-
-    <div class="flex flex-col items-center space-y-4">
-        <!-- First input field (existing) -->
-        <div class="flex flex-col items-center">
-            <label for="num-simulations" class="text-gray-700 font-semibold mb-2">
-                Number of days to simulate:
-            </label>
-            <input
-                type="number"
-                id="num-simulations"
-                value="30"
-                min="1"
-                class="w-24 text-center rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            >
+<div class="space-y-6 bg-gray-50 p-2 md:p-4" style="min-height:100vh">
+    <!-- Header Section -->
+    <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Monte Carlo Simulation</h1>
+            <p class="text-slate-500 text-lg">Inventory Optimization • Risk Analysis</p>
         </div>
-
-        <!-- Second input field (lead time distribution type) -->
-        <div class="flex flex-col items-center">
-            <label for="lead-time-distribution" class="text-gray-700 font-semibold mb-2">
-                Lead time distribution:
-            </label>
-            <select
-                id="lead-time-distribution"
-                class="w-32 text-center rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                onchange="updateLeadTimeLabels()"
-            >
-                <option value="normal">Normal</option>
-                <option value="uniform">Uniform</option>
-            </select>
-        </div>
-
-        <!-- Third input field (first lead time parameter) -->
-        <div class="flex flex-col items-center">
-            <label for="lead-time-param1" id="param1-label" class="text-gray-700 font-semibold mb-2">
-                Average lead time (days):
-            </label>
-            <input
-                type="number"
-                id="lead-time-param1"
-                value="7"
-                min="0"
-                step="0.1"
-                class="w-24 text-center rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            >
-        </div>
-
-        <!-- Fourth input field (second lead time parameter) -->
-        <div class="flex flex-col items-center">
-            <label for="lead-time-param2" id="param2-label" class="text-gray-700 font-semibold mb-2">
-                Lead time std deviation:
-            </label>
-            <input
-                type="number"
-                id="lead-time-param2"
-                value="2"
-                min="0"
-                step="0.1"
-                class="w-24 text-center rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            >
-        </div>
-
-        <!-- Fifth input field (number of iterations) -->
-        <div class="flex flex-col items-center">
-            <label for="num-iterations" class="text-gray-700 font-semibold mb-2">
-                Number of iterations:
-            </label>
-            <input
-                type="number"
-                id="num-iterations"
-                value="10"
-                min="1"
-                max="20"
-                class="w-24 text-center rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            >
-        </div>
-
-        <!-- Sixth input field (waste cost rate) -->
-        <div class="flex flex-col items-center">
-            <label for="waste-cost-rate" class="text-gray-700 font-semibold mb-2">
-                Waste cost rate (%):
-            </label>
-            <input
-                type="number"
-                id="waste-cost-rate"
-                value="80"
-                min="0"
-                max="100"
-                step="1"
-                class="w-24 text-center rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                title="Percentage of product cost charged as waste when expired"
-            >
-        </div>
-
-        <button
-            id="run-button"
-            onclick="runSimulation()"
-            class="bg-blue-600 hover:bg-blue-700 text-black font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
-        >
-            Run Simulation
-        </button>
-
-        <!-- Loading indicator -->
-        <div
-            id="loading-spinner"
-            class="mt-8 hidden animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"
-        ></div>
     </div>
 
-    <div id="results-container" class="mt-12 space-y-8">
-        <!-- Simulation results will be displayed here -->
+    <div class="max-w-6xl mx-auto space-y-6">
+        <!-- Simulation Parameters -->
+        <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-medium text-gray-900">Simulation Parameters</h3>
+                <p class="text-xs text-gray-600">Configure Monte Carlo simulation settings</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Simulation Days -->
+                    <div>
+                        <label for="num-simulations" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                            Simulation Days
+                        </label>
+                        <input
+                            type="number"
+                            id="num-simulations"
+                            value="30"
+                            min="1"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                        >
+                    </div>
+
+                    <!-- Lead Time Distribution -->
+                    <div>
+                        <label for="lead-time-distribution" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                            Distribution Type
+                        </label>
+                        <select
+                            id="lead-time-distribution"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                            onchange="updateLeadTimeLabels()"
+                        >
+                            <option value="normal">Normal</option>
+                            <option value="uniform">Uniform</option>
+                        </select>
+                    </div>
+
+                    <!-- Parameter 1 -->
+                    <div>
+                        <label for="lead-time-param1" id="param1-label" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                            Average Lead Time
+                        </label>
+                        <input
+                            type="number"
+                            id="lead-time-param1"
+                            value="7"
+                            min="0"
+                            step="0.1"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                        >
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <!-- Parameter 2 -->
+                    <div>
+                        <label for="lead-time-param2" id="param2-label" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                            Std Deviation
+                        </label>
+                        <input
+                            type="number"
+                            id="lead-time-param2"
+                            value="2"
+                            min="0"
+                            step="0.1"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                        >
+                    </div>
+
+                    <!-- Iterations -->
+                    <div>
+                        <label for="num-iterations" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                            Iterations
+                        </label>
+                        <input
+                            type="number"
+                            id="num-iterations"
+                            value="10"
+                            min="1"
+                            max="20"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                        >
+                    </div>
+
+                    <!-- Waste Cost Rate -->
+                    <div>
+                        <label for="waste-cost-rate" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                            Waste Cost Rate (%)
+                        </label>
+                        <input
+                            type="number"
+                            id="waste-cost-rate"
+                            value="80"
+                            min="0"
+                            max="100"
+                            step="1"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                            title="Percentage of product cost charged as waste when expired"
+                        >
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-center">
+                    <button
+                        id="run-button"
+                        onclick="runSimulation()"
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors" style="border-radius:0"
+                    >
+                        <i class="fas fa-play mr-2 text-xs"></i>
+                        Run Simulation
+                    </button>
+                </div>
+
+                <!-- Loading indicator -->
+                <div
+                    id="loading-spinner"
+                    class="mt-4 hidden flex justify-center items-center space-x-2"
+                >
+                    <div class="animate-spin h-5 w-5 border-2 border-slate-600 border-t-transparent" style="border-radius:0"></div>
+                    <span class="text-xs text-slate-600 font-medium">PROCESSING SIMULATION...</span>
+                </div>
+            </div>
+        <!-- Results Container -->
+        <div id="results-container" class="space-y-4">
+            <!-- Simulation results will be displayed here -->
+        </div>
     </div>
 </div>
 
@@ -134,15 +158,15 @@
         const param2Input = document.getElementById('lead-time-param2');
 
         if (distributionSelect.value === 'normal') {
-            param1Label.textContent = 'Average lead time (days):';
-            param2Label.textContent = 'Lead time std deviation:';
+            param1Label.textContent = 'Average Lead Time';
+            param2Label.textContent = 'Std Deviation';
             param1Input.value = '7';
             param2Input.value = '2';
             param1Input.min = '0';
             param2Input.min = '0';
         } else if (distributionSelect.value === 'uniform') {
-            param1Label.textContent = 'Floor lead time (days):';
-            param2Label.textContent = 'Ceiling lead time (days):';
+            param1Label.textContent = 'Floor Lead Time';
+            param2Label.textContent = 'Ceiling Lead Time';
             param1Input.value = '5';
             param2Input.value = '10';
             param1Input.min = '0';
@@ -225,6 +249,7 @@
         // Show loading spinner and disable button
         button.disabled = true;
         button.classList.add('opacity-50', 'cursor-not-allowed');
+        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2 text-xs"></i>Processing...';
         loadingSpinner.classList.remove('hidden');
         resultsContainer.innerHTML = ''; // Clear previous results
 
@@ -278,6 +303,7 @@
             loadingSpinner.classList.add('hidden');
             button.disabled = false;
             button.classList.remove('opacity-50', 'cursor-not-allowed');
+            button.innerHTML = '<i class="fas fa-play mr-2 text-xs"></i>Run Simulation';
         }
     }
 
@@ -297,65 +323,67 @@
 
         results.forEach(item => {
             const card = document.createElement('div');
-            card.className = "bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200";
+            card.className = "bg-white border border-slate-200 mb-4";
 
             card.innerHTML = `
-                <h2 class="text-2xl font-semibold text-gray-700 mb-2">
-                    SKU: ${item.SKU} - ${item.product_name || ''}
-                </h2>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <p class="text-gray-600">
-                        Avg Initial Stock: <span class="font-medium">${Number(item.initial_stock_avg).toFixed(2)}</span>
-                    </p>
-                    <p class="text-gray-600">
-                        Avg Volume: <span class="font-medium">${Number(item.a_volume_avg).toFixed(2)}</span>
-                    </p>
-                    <p class="text-gray-600">
-                        Volume Std Dev: <span class="font-medium">${Number(item.sd_volume_avg).toFixed(2)}</span>
-                    </p>
-                    <p class="text-gray-600">
-                        Simulation Days: <span class="font-medium">${item.simulation_days}</span>
-                    </p>
+                <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-medium text-slate-800">SKU: ${item.SKU}</h3>
+                        <span class="text-xs text-slate-500">${item.product_name || 'Unknown Product'}</span>
+                    </div>
                 </div>
-                <div class="grid grid-cols-3 gap-4 mb-4">
-                    <p class="text-gray-600">
-                        Lead Time Dist: <span class="font-medium capitalize">${distribution}</span>
-                    </p>
-                    <p class="text-gray-600">
-                        ${param1Label}: <span class="font-medium">${param1}</span>
-                    </p>
-                    <p class="text-gray-600">
-                        ${param2Label}: <span class="font-medium">${param2}</span>
-                    </p>
-                </div>
-                <div>
-                    <div class="h5 fw-bold text-primary mb-2">Simulation Output (10 runs)</div>
-                    <div class="row text-center mb-2 py-2 bg-light rounded">
-                        <div class="col-3 border-end">
-                            <div class="small text-secondary">Min Demand</div>
-                            <div class="fw-bold text-dark">${item.min_demand}</div>
+                <div class="p-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 uppercase tracking-wide">Initial Stock</div>
+                            <div class="text-sm font-semibold text-slate-800">${Number(item.initial_stock_avg).toFixed(2)}</div>
                         </div>
-                        <div class="col-3 border-end">
-                            <div class="small text-secondary">Avg Demand</div>
-                            <div class="fw-bold text-dark">${typeof item.avg_demand === 'number' ? item.avg_demand.toFixed(1) : 'N/A'}</div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 uppercase tracking-wide">Avg Volume</div>
+                            <div class="text-sm font-semibold text-slate-800">${Number(item.a_volume_avg).toFixed(2)}</div>
                         </div>
-                        <div class="col-3 border-end">
-                            <div class="small text-secondary">Max Demand</div>
-                            <div class="fw-bold text-dark">${item.max_demand}</div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 uppercase tracking-wide">Vol Std Dev</div>
+                            <div class="text-sm font-semibold text-slate-800">${Number(item.sd_volume_avg).toFixed(2)}</div>
                         </div>
-                        <div class="col-3">
-                            <div class="small text-secondary">Expires (days)</div>
-                            <div class="fw-bold text-dark">${item.expiration_days || 'N/A'}</div>
+                        <div class="text-center">
+                            <div class="text-xs text-slate-500 uppercase tracking-wide">Sim Days</div>
+                            <div class="text-sm font-semibold text-slate-800">${item.simulation_days}</div>
                         </div>
                     </div>
-                    <div class="row text-center mb-2 py-2 bg-orange-50 rounded border border-orange-200">
-                        <div class="col-6 border-end">
-                            <div class="small text-orange-600">Total Waste Cost</div>
-                            <div class="fw-bold text-orange-800">$${(item.total_waste_cost || 0).toFixed(2)}</div>
+                    
+                    <div class="border-t border-slate-200 pt-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-xs font-medium text-slate-600 uppercase tracking-wide">Monte Carlo Results</h4>
+                            <span class="text-xs text-slate-500">${item.num_iterations || 10} iterations</span>
                         </div>
-                        <div class="col-6">
-                            <div class="small text-orange-600">Waste Quantity</div>
-                            <div class="fw-bold text-orange-800">${(item.total_waste_quantity || 0).toFixed(1)} units</div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div class="bg-slate-50 border border-slate-200 p-3 text-center">
+                                <div class="text-xs text-slate-500 uppercase tracking-wide">Min Demand</div>
+                                <div class="text-lg font-bold text-slate-800">${item.min_demand}</div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 p-3 text-center">
+                                <div class="text-xs text-slate-500 uppercase tracking-wide">Avg Demand</div>
+                                <div class="text-lg font-bold text-slate-800">${typeof item.avg_demand === 'number' ? item.avg_demand.toFixed(1) : 'N/A'}</div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 p-3 text-center">
+                                <div class="text-xs text-slate-500 uppercase tracking-wide">Max Demand</div>
+                                <div class="text-lg font-bold text-slate-800">${item.max_demand}</div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 p-3 text-center">
+                                <div class="text-xs text-slate-500 uppercase tracking-wide">Expires</div>
+                                <div class="text-lg font-bold text-slate-800">${item.expiration_days || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                        <div class="text-center border-r border-orange-300">
+                            <div class="text-sm text-orange-600">Total Waste Cost</div>
+                            <div class="font-bold text-orange-800">$${(item.total_waste_cost || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-orange-600">Waste Quantity</div>
+                            <div class="font-bold text-orange-800">${(item.total_waste_quantity || 0).toFixed(1)} units</div>
                         </div>
                     </div>
                 </div>
@@ -367,8 +395,11 @@
     function showError(message) {
         const resultsContainer = document.getElementById('results-container');
         resultsContainer.innerHTML = `
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p class="text-red-600 text-center font-medium">${message}</p>
+            <div class="bg-red-50 border border-red-200 p-4">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                    <p class="text-sm text-red-700 font-medium">${message}</p>
+                </div>
             </div>
         `;
     }
@@ -377,19 +408,22 @@
         const resultsContainer = document.getElementById('results-container');
         // Create the success message div
         const successDiv = document.createElement('div');
-        successDiv.className = "bg-green-50 border border-green-200 rounded-lg p-4 mb-6";
+        successDiv.className = "bg-slate-50 border border-slate-200 p-4 mb-4";
         
         // Number of simulated days and iterations
         const numDays = parseInt(document.getElementById('num-simulations').value, 10);
         const numIterations = parseInt(document.getElementById('num-iterations').value, 10);
         
         successDiv.innerHTML = `
-            <p class="text-green-700 text-center font-medium">
-                ✅ ${message}
-            </p>
-            <p class="text-green-600 text-center text-sm mt-1">
-                Processed: ${totalRecords} SKUs × ${numDays} days × ${numIterations} iterations = ${totalRecords * numDays * numIterations} records
-            </p>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                    <p class="text-sm text-slate-700 font-medium">${message}</p>
+                </div>
+                <div class="text-xs text-slate-500">
+                    ${totalRecords} SKUs • ${numDays} days • ${numIterations} iterations
+                </div>
+            </div>
         `;
         // Insert the message at the top, before the results
         resultsContainer.prepend(successDiv);
@@ -405,6 +439,21 @@
                 }
             });
         });
+        
+        // Check if there's existing simulation data to display
+        {% if existing_data %}
+        const existingData = {{ existing_data | tojson }};
+        if (existingData && existingData.results) {
+            console.log('Loading existing simulation data...', existingData);
+            displayResults(
+                existingData.results, 
+                existingData.simulation_size || 30,
+                existingData.lead_time_distribution || 'normal',
+                7,  // Default param1
+                2   // Default param2
+            );
+        }
+        {% endif %}
     });
 </script>
 

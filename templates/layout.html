@@ -1,63 +1,205 @@
 <!DOCTYPE html>
-
-<html lang="en">
-
-    <head>
-
-        <meta charset="utf-8">
-        <meta name="viewport" content="initial-scale=1, width=device-width">
-
-        <!-- http://getbootstrap.com/docs/5.3/ -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-        <!-- https://favicon.io/emoji-favicons/money-bag/ -->
-        <link href="/static/favicon.ico" rel="icon">
-
-        <link href="/static/styles.css" rel="stylesheet">
-
-        <title>Nexstock</title>
-
-    </head>
-
-    <body>
-        <h1 style="text-align: center;">Nexstock</h1>
-        <nav>
-            <div class="container-fluid">
-                <a class="navbar-brand" href="/"><span class="blue">Home</span></a>
-                <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <a class="navbar-brand" href="/inventory"><span class="blue">Inventory</span></a>
-                <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <a class="navbar-brand" href="/portafolio"><span class="blue">Portafolio</span></a>
-                <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <a class="navbar-brand" href="/transactions"><span class="blue">Transactions</span></a>
-                <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <a class="navbar-brand" href="/simulate"><span class="blue">Simulate</span></a>
-                <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <a class="navbar-brand" href="/optimize"><span class="blue">Optimize</span></a>
-                <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <a class="navbar-brand" href="/results"><span class="blue">Results</span></a>
-                <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#navbar" data-bs-toggle="collapse" type="button">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>{% block title %}NexStock - Inventory Management System{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- Tailwind CSS Local Build -->
+    <link href="/static/tailwind.css?v={{ cache_buster }}" rel="stylesheet" id="tailwind-local">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v={{ cache_buster }}">
+    
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Essential styles only - Tailwind handles the rest */
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Sidebar transition */
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        @media (max-width: 768px) {
+            .sidebar-hidden { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+    <div id="sidebar" class="bg-white w-64 min-h-screen shadow-lg sidebar-transition flex flex-col" style="border-radius:0">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-200" style="border-radius:0">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="NexStock Logo" class="w-10 h-10">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-800">NexStock</h1>
+                        <p class="text-sm text-slate-500">Inventory Management</p>
+                    </div>
+                </div>
             </div>
-        </nav>
-
-        <main class="container py-5 text-center">
-            {% block main %}{% endblock %}
-        </main>
-
-    </body>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <!-- Operations -->
+                <div class="mb-6">
+                    <h3 class="text-xs uppercase tracking-wider text-primary-500 font-semibold mb-3 px-3">Operations</h3>
+                    <a href="/" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-home w-5 h-5 mr-3 text-slate-400"></i>
+                        Dashboard
+                    </a>
+                    <a href="/inventory" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-boxes w-5 h-5 mr-3 text-slate-400"></i>
+                        Inventory
+                    </a>
+                    <a href="/transactions" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-exchange-alt w-5 h-5 mr-3 text-slate-400"></i>
+                        Transactions
+                    </a>
+                    <a href="/portafolio" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-briefcase w-5 h-5 mr-3 text-slate-400"></i>
+                        Portfolio
+                    </a>
+                </div>
+                
+                <!-- Analysis -->
+                <div class="mb-6">
+                    <h3 class="text-xs uppercase tracking-wider text-primary-500 font-semibold mb-3 px-3">Analysis</h3>
+                    <a href="/analytics" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-chart-bar w-5 h-5 mr-3 text-slate-400"></i>
+                        Analytics
+                    </a>
+                    <a href="/simulate" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-play-circle w-5 h-5 mr-3 text-slate-400"></i>
+                        Simulation
+                    </a>
+                    <a href="/optimize" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-cogs w-5 h-5 mr-3 text-slate-400"></i>
+                        Optimization
+                    </a>
+                    <a href="/results" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-chart-pie w-5 h-5 mr-3 text-slate-400"></i>
+                        Results
+                    </a>
+                </div>
+                
+                <!-- Tools -->
+                <div class="mb-6">
+                    <h3 class="text-xs uppercase tracking-wider text-primary-500 font-semibold mb-3 px-3">Tools</h3>
+                    <a href="/alerts" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-bell w-5 h-5 mr-3 text-slate-400"></i>
+                        Alerts
+                    </a>
+                    <a href="/barcode" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-barcode w-5 h-5 mr-3 text-slate-400"></i>
+                        Barcode Scanner
+                    </a>
+                    <a href="/import_export" class="flex items-center px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-file-export w-5 h-5 mr-3 text-slate-400"></i>
+                        Import/Export
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- Footer -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="text-xs text-primary-500 text-center">
+                    © 2025 NexStock Pro
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <button id="sidebar-toggle" class="md:hidden p-2 rounded-lg text-primary-500 hover:bg-primary-50">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div>
+                            <h2 class="text-lg font-semibold text-primary-800">{% block page_title %}Dashboard{% endblock %}</h2>
+                            <p class="text-sm text-primary-500">{% block page_description %}Main Control Panel{% endblock %}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-primary-600">
+                            <i class="fas fa-clock mr-1"></i>
+                            <span id="current-time"></span>
+                        </div>
+                        <div class="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
+                <div class="max-w-7xl mx-auto">
+                    {% block main %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script>
+        // Sidebar toggle for mobile
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('sidebar-hidden');
+        });
+        
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+            document.getElementById('current-time').textContent = timeString;
+        }
+        
+        updateTime();
+        setInterval(updateTime, 60000); // Update every minute
+        
+        // Close sidebar on mobile when clicking outside
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            
+            if (window.innerWidth < 768 && 
+                !sidebar.contains(e.target) && 
+                !sidebarToggle.contains(e.target)) {
+                sidebar.classList.add('sidebar-hidden');
+            }
+        });
+        
+        // Debug helper - show CSS status
+        console.log('Cache buster:', '{{ cache_buster }}');
+        console.log('Tailwind CSS local loaded from: /static/tailwind.css');
+        console.log('CDN Tailwind should NOT be loaded (using local build)');
+        
+        // Check if CSS loaded successfully
+        document.addEventListener('DOMContentLoaded', function() {
+            const cssLinks = document.querySelectorAll('link[rel="stylesheet"]');
+            cssLinks.forEach((link, index) => {
+                link.addEventListener('load', function() {
+                    console.log(`CSS ${index + 1} loaded successfully:`, this.href);
+                });
+                link.addEventListener('error', function() {
+                    console.error(`Failed to load CSS ${index + 1}:`, this.href);
+                });
+            });
+        });
+    </script>
+</body>
 </html>

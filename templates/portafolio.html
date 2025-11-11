@@ -1,33 +1,179 @@
 {% extends "layout.html" %}
 
-{% block title %}
-    Portafolio
-{% endblock %}
+{% block title %}Product Portfolio - NexStock{% endblock %}
+
+{% block page_title %}Product Portfolio{% endblock %}
+{% block page_description %}Complete catalog with cost, price and margin calculations{% endblock %}
 
 {% block main %}
-    <h2>Portafolio</h2>
-    <table class = "table table">
-        <thead class = "thead-light">
-            <tr>
-                <th>SKU</th>
-                <th>Expiration (Years)</th>
-                <th>Type</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Margin</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in products %}
-            <tr>
-                <td>{{ product.SKU }}</td>
-                <td>{{ product.EXPIRATION/365 }}</td>
-                <td>{{ product.TYPE }}</td>
-                <td>{{ product.NAME }}</td>
-                <td>{{ product.PRICE }}</td>
-                <td>{{ product.MARGIN }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<style>
+    /* Force absolutely no rounded edges anywhere on this page */
+    * { border-radius: 0 !important; }
+    ::after, ::before { border-radius: 0 !important; }
+<style>
+    /* ABSOLUTELY NO ROUNDED EDGES ANYWHERE - HIGHEST PRIORITY */
+    * { border-radius: 0 !important; }
+    ::after, ::before { border-radius: 0 !important; }
+    .rounded, .rounded-lg, .rounded-md, .rounded-sm, .rounded-full, .rounded-none, [class*="rounded"], [style*="border-radius"] {
+        border-radius: 0 !important;
+    }
+</style>
+
+    <div class="flex flex-col md:flex-row gap-6 mb-8">
+        <div class="bg-white shadow-sm border border-gray-200 p-6 flex-1">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-box text-2xl text-blue-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total Products</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ products|length if products is iterable else 0 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white shadow-sm border border-gray-200 p-6 flex-1">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-tags text-2xl text-green-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Avg Margin</p>
+                    <p class="text-2xl font-semibold text-gray-900">
+                        {% set ns = namespace(total=0, count=0) %}
+                        {% for product in products %}
+                            {% if product.MARGIN is not none %}
+                                {% set ns.total = ns.total + (product.MARGIN * 100) %}
+                                {% set ns.count = ns.count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if ns.count > 0 %}
+                            {{ "%.1f"|format(ns.total / ns.count) }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white shadow-sm border border-gray-200 p-6 flex-1">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-dollar-sign text-2xl text-yellow-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Avg Cost</p>
+                    <p class="text-2xl font-semibold text-gray-900">
+                        {% set ns = namespace(total=0, count=0) %}
+                        {% for product in products %}
+                            {% if product.COST is not none %}
+                                {% set ns.total = ns.total + product.COST %}
+                                {% set ns.count = ns.count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if ns.count > 0 %}
+                            ${{ "%.2f"|format(ns.total / ns.count) }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white shadow-sm border border-gray-200 p-6 flex-1">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-calendar text-2xl text-red-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Avg Shelf Life</p>
+                    <p class="text-2xl font-semibold text-gray-900">
+                        {% set ns = namespace(total=0, count=0) %}
+                        {% for product in products %}
+                            {% if product.EXPIRATION is not none %}
+                                {% set ns.total = ns.total + product.EXPIRATION %}
+                                {% set ns.count = ns.count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if ns.count > 0 %}
+                            {% set avg_exp_days = ns.total / ns.count %}
+                            {% set avg_exp_years = avg_exp_days / 365 %}
+                            {{ "%.1f"|format(avg_exp_years) }} years
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW TABLE WITH COST, PRICE, MARGIN -->
+    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0 !important;">
+        <div class="p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Product Catalog</h3>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Margin</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shelf Life</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for product in products %}
+                        <tr class="hover:bg-gray-50">
+                            <!-- SKU -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8 bg-blue-100 flex items-center justify-center" style="border-radius:0 !important;">
+                                        <i class="fas fa-barcode text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">{{ product.SKU }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Product Name -->
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">{{ product.NAME or 'Unnamed Product' }}</div>
+                            </td>
+                            
+                            <!-- Cost -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${{ "%.2f"|format(product.COST) }}
+                            </td>
+                            
+                            <!-- Price -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {% set calculated_price = product.COST * (100 / (100 - (product.MARGIN * 100))) %}
+                                ${{ "%.2f"|format(calculated_price) }}
+                            </td>
+                            
+                            <!-- Margin -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ "%.1f"|format(product.MARGIN * 100) }}%
+                            </td>
+                            
+                            <!-- Shelf Life -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {% if product.EXPIRATION %}
+                                    {{ product.EXPIRATION }} years
+                                {% else %}
+                                    Not specified
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

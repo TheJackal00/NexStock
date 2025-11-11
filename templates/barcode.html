@@ -1,0 +1,304 @@
+{% extends "layout.html" %}
+
+{% block title %}Barcode Scanner - NexStock{% endblock %}
+
+{% block page_title %}Barcode Scanner{% endblock %}
+{% block page_description %}QR Code & Barcode Management{% endblock %}
+
+{% block main %}
+<div class="space-y-6 bg-gray-50 p-2 md:p-4" style="min-height:100vh">
+    <!-- Header Section -->
+    <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">📱 Barcode & QR Scanner</h1>
+            <p class="text-slate-500 text-lg">Scan products with camera or enter SKU manually</p>
+        </div>
+    </div>
+
+    <!-- Scanner Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Camera/Input Area -->
+        <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <h6 class="text-sm font-medium text-gray-800">Scanner</h6>
+            </div>
+            <div class="p-6">
+                <!-- Camera View -->
+                <div id="camera-container" class="mb-4" style="display: none;">
+                    <video id="video" class="w-full border-2 border-dashed border-gray-300" style="max-height: 400px;"></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                </div>
+                
+                <!-- Manual Input -->
+                <div id="manual-input">
+                    <!-- Camera Button -->
+                    <div class="mb-4 text-center">
+                        <button type="button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 shadow-sm transition-colors text-base" style="border-radius:0" onclick="toggleCamera()" id="camera-btn">
+                            <i class="fas fa-camera mr-2"></i><span class="text-white">Start Scanning</span>
+                        </button>
+                    </div>
+                    
+                    <div class="relative mb-4">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">or enter manually</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="manual-barcode" class="block text-sm font-medium text-gray-700 mb-2">Enter SKU or Barcode:</label>
+                        <input type="text" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" style="border-radius:0" id="manual-barcode" placeholder="Type SKU...">
+                    </div>
+                    <div class="text-center">
+                        <button class="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium px-6 py-3 shadow-sm transition-colors text-base" style="border-radius:0" onclick="lookupProduct()">
+                            <i class="fas fa-search mr-2"></i><span class="text-white">Lookup Product</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Scan Result -->
+                <div id="scan-result" class="mt-4" style="display: none;">
+                    <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3" style="border-radius:0">
+                        <strong>Scanned:</strong> <span id="scanned-data"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Information -->
+        <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <h6 class="text-sm font-medium text-gray-800">Product Information</h6>
+            </div>
+            <div class="p-6">
+                <div id="product-info" style="display: none;">
+                    <table class="w-full">
+                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">SKU:</td><td class="py-3 text-right text-gray-900" id="info-sku">-</td></tr>
+                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Name:</td><td class="py-3 text-right text-gray-900" id="info-name">-</td></tr>
+                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Cost:</td><td class="py-3 text-right text-gray-900" id="info-cost">-</td></tr>
+                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Margin:</td><td class="py-3 text-right text-gray-900" id="info-margin">-</td></tr>
+                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Current Stock:</td><td class="py-3 text-right text-gray-900 font-bold" id="info-stock">-</td></tr>
+                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Expiration:</td><td class="py-3 text-right text-gray-900" id="info-expiration">-</td></tr>
+                    </table>
+                    
+                    <h6 class="text-sm font-medium text-gray-800 mt-6 mb-3">Recent Transactions</h6>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase">Volume</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase">Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-transactions" class="divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="no-product-info" class="text-center text-gray-500 py-12">
+                    <i class="fas fa-search text-6xl mb-4 text-gray-300"></i>
+                    <p class="text-lg">Scan or enter a product code</p>
+                    <p class="text-sm text-gray-400 mt-2">to view information</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Scanner Library -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+<script>
+let video, canvas, context;
+let scanning = false;
+
+// Check if jsQR is loaded
+if (typeof jsQR === 'undefined') {
+    console.error('jsQR library not loaded!');
+} else {
+    console.log('jsQR library loaded successfully');
+}
+
+// Camera toggle
+async function toggleCamera() {
+    const cameraBtn = document.getElementById('camera-btn');
+    
+    if (!scanning) {
+        console.log('Attempting to start camera...');
+        
+        // Check if getUserMedia is available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Camera API not available. Please use a modern browser with HTTPS.');
+            return;
+        }
+        
+        try {
+            // Try different camera constraints
+            let constraints = { 
+                video: { 
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            };
+            
+            console.log('Requesting camera access...');
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            console.log('Camera access granted!');
+            
+            video = document.getElementById('video');
+            canvas = document.getElementById('canvas');
+            context = canvas.getContext('2d');
+            
+            video.srcObject = stream;
+            await video.play();
+            
+            document.getElementById('camera-container').style.display = 'block';
+            document.getElementById('manual-input').style.display = 'none';
+            
+            cameraBtn.innerHTML = '<i class="fas fa-stop mr-2"></i><span class="text-white">Stop Camera</span>';
+            cameraBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            cameraBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+            
+            scanning = true;
+            console.log('Starting QR scan loop...');
+            scanQRCode();
+            
+        } catch (err) {
+            console.error('Camera error details:', err);
+            let errorMsg = 'Camera access failed!\n\n';
+            
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                errorMsg += 'Permission denied. Please:\n1. Click the camera icon in the address bar\n2. Allow camera access\n3. Refresh the page';
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                errorMsg += 'No camera found. Please check:\n1. Camera is connected\n2. Camera is not in use by another app';
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                errorMsg += 'Camera is in use by another application.\nPlease close other apps using the camera.';
+            } else {
+                errorMsg += 'Error: ' + err.message + '\n\nMake sure you are using HTTPS or localhost.';
+            }
+            
+            alert(errorMsg);
+        }
+    } else {
+        stopCamera();
+    }
+}
+
+function stopCamera() {
+    if (video && video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+    }
+    
+    document.getElementById('camera-container').style.display = 'none';
+    document.getElementById('manual-input').style.display = 'block';
+    
+    const cameraBtn = document.getElementById('camera-btn');
+    cameraBtn.innerHTML = '<i class="fas fa-camera mr-2"></i><span class="text-white">Start Camera</span>';
+    cameraBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+    cameraBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+    
+    scanning = false;
+}
+
+function scanQRCode() {
+    if (!scanning) return;
+    
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        
+        if (code) {
+            document.getElementById('scanned-data').textContent = code.data;
+            document.getElementById('scan-result').style.display = 'block';
+            document.getElementById('manual-barcode').value = code.data;
+            
+            // Auto-lookup
+            lookupProduct();
+            
+            // Stop camera after successful scan
+            setTimeout(() => {
+                stopCamera();
+            }, 1000);
+        }
+    }
+    
+    requestAnimationFrame(scanQRCode);
+}
+
+// Product lookup
+function lookupProduct() {
+    const barcodeData = document.getElementById('manual-barcode').value.trim();
+    
+    if (!barcodeData) {
+        alert('Please enter or scan a barcode');
+        return;
+    }
+    
+    fetch('/api/barcode/lookup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({barcode_data: barcodeData})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        displayProductInfo(data);
+    })
+    .catch(error => {
+        console.error('Lookup error:', error);
+        alert('Error looking up product. Make sure the backend API is running.');
+    });
+}
+
+function displayProductInfo(data) {
+    document.getElementById('info-sku').textContent = data.sku || '-';
+    document.getElementById('info-name').textContent = data.product_info.NAME || 'Unknown';
+    document.getElementById('info-cost').textContent = '$' + (data.product_info.COST || 0);
+    document.getElementById('info-margin').textContent = (data.product_info.MARGIN || 0) + '%';
+    document.getElementById('info-stock').textContent = data.current_stock || '0';
+    document.getElementById('info-expiration').textContent = (data.product_info.EXPIRATION || 365) + ' days';
+    
+    const tbody = document.getElementById('recent-transactions');
+    tbody.innerHTML = '';
+    
+    if (data.recent_transactions && data.recent_transactions.length > 0) {
+        data.recent_transactions.forEach(transaction => {
+            const row = tbody.insertRow();
+            const badgeClass = transaction.VOLUME > 0 ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200';
+            row.innerHTML = `
+                <td class="px-4 py-2 text-gray-900">${Math.abs(transaction.VOLUME)}</td>
+                <td class="px-4 py-2">
+                    <span class="inline-block px-3 py-1 text-xs font-medium ${badgeClass}" style="border-radius:0">
+                        ${transaction.VOLUME > 0 ? 'IN' : 'OUT'}
+                    </span>
+                </td>
+            `;
+        });
+    } else {
+        tbody.innerHTML = '<tr><td colspan="2" class="px-4 py-4 text-center text-gray-500">No recent transactions</td></tr>';
+    }
+    
+    document.getElementById('product-info').style.display = 'block';
+    document.getElementById('no-product-info').style.display = 'none';
+}
+
+// Allow Enter key to trigger lookup
+document.getElementById('manual-barcode').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        lookupProduct();
+    }
+});
+</script>
+{% endblock %}

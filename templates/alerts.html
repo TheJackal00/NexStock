@@ -1,0 +1,460 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Alerts & Notifications
+{% endblock %}
+
+{% block page_title %}Alerts & Notifications{% endblock %}
+
+{% block main %}
+<div class="space-y-6">
+    <!-- Header with Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-primary-900">🔔 Alerts & Notifications</h1>
+            <p class="mt-2 text-sm text-primary-600">Monitor critical inventory alerts and notifications</p>
+        </div>
+        <div class="mt-4 sm:mt-0 flex space-x-3">
+            <button 
+                type="button" 
+                onclick="refreshAlerts()"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" style="border-radius:0">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Refresh
+            </button>
+            <button 
+                type="button" 
+                onclick="configureAlerts()"
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" style="border-radius:0">
+                <i class="fas fa-cog mr-2"></i>
+                Configure
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" id="alert-summary">
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Critical Alerts</div>
+                    <div class="text-3xl font-bold text-gray-900" id="critical-count">0</div>
+                </div>
+                <div class="w-12 h-12 bg-red-600 flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Warning Alerts</div>
+                    <div class="text-3xl font-bold text-gray-900" id="warning-count">0</div>
+                </div>
+                <div class="w-12 h-12 bg-orange-600 flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-exclamation-circle text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Info Alerts</div>
+                    <div class="text-3xl font-bold text-gray-900" id="info-count">0</div>
+                </div>
+                <div class="w-12 h-12 bg-blue-600 flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-info-circle text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Total Alerts</div>
+                    <div class="text-3xl font-bold text-gray-900" id="total-count">0</div>
+                </div>
+                <div class="w-12 h-12 bg-slate-600 flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-bell text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Filters -->
+    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Filters</h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label for="alert-type-filter" class="block text-sm font-medium text-gray-700 mb-2">Alert Type</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" id="alert-type-filter" onchange="filterAlerts()">
+                        <option value="">All Types</option>
+                        <option value="low_stock">Low Stock</option>
+                        <option value="stock_breaks">Stock Breaks</option>
+                        <option value="stagnated">Stagnated</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="severity-filter" class="block text-sm font-medium text-gray-700 mb-2">Severity Level</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" id="severity-filter" onchange="filterAlerts()">
+                        <option value="">All Severities</option>
+                        <option value="critical">Critical</option>
+                        <option value="warning">Warning</option>
+                        <option value="info">Info</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="sku-filter" class="block text-sm font-medium text-gray-700 mb-2">Product SKU</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" id="sku-filter" placeholder="Enter SKU..." onkeyup="filterAlerts()">
+                </div>
+                <div class="flex items-end">
+                    <button class="w-full px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" style="border-radius:0" onclick="clearFilters()">
+                        <i class="fas fa-times mr-2"></i>Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts List -->
+    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-medium text-gray-900">Active Alerts</h3>
+                <div class="text-sm text-gray-500">
+                    Last updated: <span id="last-updated">--</span>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <div id="alerts-container">
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-gray-100 flex items-center justify-center mx-auto mb-4" style="border-radius:0">
+                        <div class="w-8 h-8 border-4 border-gray-300 border-t-primary-600 animate-spin" style="border-radius:50%"></div>
+                    </div>
+                    <p class="text-gray-700 font-medium">Loading alerts...</p>
+                    <p class="text-gray-500 text-sm mt-1">Analyzing inventory data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Configuration Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 hidden z-50" id="configModal">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white shadow-sm border border-gray-200 max-w-md w-full" style="border-radius:0">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">Alert Configuration</h3>
+                    <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeModal()">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <form id="alert-config-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Low Stock Threshold (days):</label>
+                        <input type="number" class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" id="low-stock-days" value="14" min="1" max="90">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Critical Stock Threshold (days):</label>
+                        <input type="number" class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" id="critical-stock-days" value="7" min="1" max="30">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Expiration Warning (days before):</label>
+                        <input type="number" class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" id="expiration-warning-days" value="30" min="1" max="90">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Notifications:</label>
+                        <div class="flex items-center">
+                            <input class="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500" type="checkbox" id="email-notifications" checked>
+                            <label class="ml-2 text-sm text-gray-700" for="email-notifications">
+                                Enable email notifications
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-2">
+                <button type="button" class="px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" style="border-radius:0" onclick="closeModal()">Cancel</button>
+                <button type="button" class="px-4 py-2 border border-transparent shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" style="border-radius:0" onclick="saveConfiguration()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery for compatibility -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+let allAlerts = [];
+let filteredAlerts = [];
+
+// Load alerts on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadAlerts();
+    
+    // Auto-refresh every 5 minutes
+    setInterval(loadAlerts, 5 * 60 * 1000);
+});
+
+function loadAlerts() {
+    fetch('/api/alerts/check')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error:', data.error);
+                return;
+            }
+            
+            allAlerts = data.alerts;
+            filteredAlerts = [...allAlerts];
+            
+            updateSummaryCards(data);
+            renderAlerts();
+        })
+        .catch(error => {
+            console.error('Error loading alerts:', error);
+            document.getElementById('alerts-container').innerHTML = 
+                '<div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">Error loading alerts: ' + error.message + '</div>';
+        });
+}
+
+function updateSummaryCards(data) {
+    document.getElementById('critical-count').textContent = data.critical_count;
+    document.getElementById('warning-count').textContent = data.warning_count;
+    document.getElementById('info-count').textContent = data.info_count;
+    document.getElementById('total-count').textContent = data.total_alerts;
+}
+
+function renderAlerts() {
+    const container = document.getElementById('alerts-container');
+    
+    if (filteredAlerts.length === 0) {
+    container.innerHTML = '<div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3" style="border-radius:0"><i class="fas fa-check-circle mr-2"></i>No alerts at this time. All systems operating normally!</div>';
+        return;
+    }
+
+    let html = `<div class="overflow-x-auto">
+    <table class="min-w-full bg-white border border-slate-200 shadow-sm" style="border-radius:0">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600"> </th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600">SKU</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600">Message</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600">Severity</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600">Type</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600">Timestamp</th>
+            <th class="px-4 py-2 text-left text-xs font-semibold text-slate-600">Actions</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    filteredAlerts.forEach(alert => {
+        const iconClass = getAlertIcon(alert.type);
+        const timeAgo = getTimeAgo(alert.timestamp);
+        let detailUrl = '#';
+        if (alert.type === 'low_stock') {
+            detailUrl = '/alerts/low_stock?sku=' + encodeURIComponent(alert.sku);
+        } else if (alert.type === 'stock_breaks') {
+            detailUrl = '/alerts/stock_breaks?sku=' + encodeURIComponent(alert.sku);
+        } else if (alert.type === 'stagnated') {
+            detailUrl = '/alerts/stagnated?sku=' + encodeURIComponent(alert.sku);
+        }
+        html += `
+          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+            <td class="px-4 py-2"><i class="${iconClass} text-lg text-slate-500"></i></td>
+            <td class="px-4 py-2 font-mono text-slate-800">${alert.sku}</td>
+            <td class="px-4 py-2 text-slate-700">${alert.message}${renderAlertDetails(alert) ? '<br><span class=\'text-xs text-slate-400\'>' + renderAlertDetails(alert) + '</span>' : ''}</td>
+            <td class="px-4 py-2"><span class="px-2 py-1 text-xs font-medium ${getSeverityBadgeClass(alert.severity)}" style="border-radius:0">${alert.severity.toUpperCase()}</span></td>
+            <td class="px-4 py-2"><span class="px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700" style="border-radius:0">${alert.type.replace('_', ' ').toUpperCase()}</span></td>
+            <td class="px-4 py-2 text-xs text-slate-500">${timeAgo}</td>
+            <td class="px-4 py-2">
+              <a href="${detailUrl}" class="inline-block text-blue-700 hover:underline text-xs mr-2">View Details</a>
+              <button class="inline-flex items-center px-2 py-1 text-slate-500 hover:bg-slate-100" style="border-radius:0;vertical-align:middle" title="More options"><i class="fas fa-ellipsis-h"></i></button>
+            </td>
+          </tr>
+        `;
+    });
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+}
+
+function renderAlertDetails(alert) {
+    let details = '';
+    
+    if (alert.details) {
+        details += '<div class="mt-2 text-sm text-slate-600">';
+        
+        switch(alert.type) {
+            case 'low_stock':
+                details += `Current Stock: ${alert.details.current_stock} | `;
+                details += `Avg Demand: ${alert.details.avg_demand} | `;
+                details += `Days Remaining: ${alert.details.days_remaining}`;
+                break;
+            case 'expiration':
+                details += `Days Until Expiration: ${alert.details.days_until_expiration}`;
+                break;
+            case 'reorder_point':
+                details += `Current: ${alert.details.current_stock} | `;
+                details += `Reorder Point: ${alert.details.reorder_point} | `;
+                details += `Recommended Order: ${alert.details.recommended_order_qty}`;
+                break;
+            case 'demand_variance':
+                details += `Mean Demand: ${alert.details.mean_demand} | `;
+                details += `Variability: ${alert.details.coefficient_variation} | `;
+                details += `Pattern: ${alert.details.pattern}`;
+                break;
+        }
+        
+        details += '</div>';
+    }
+    
+    return details;
+}
+
+function renderActionButtons(alert) {
+    let buttons = '';
+    
+    switch(alert.type) {
+        case 'low_stock':
+        case 'reorder_point':
+            buttons += '<button class="px-3 py-1 text-sm bg-green-600 hover:bg-green-700 text-white transition-colors" style="border-radius:0" onclick="createPurchaseOrder(\'' + alert.sku + '\')">Create Order</button>';
+            break;
+        case 'expiration':
+            buttons += '<button class="px-3 py-1 text-sm bg-amber-600 hover:bg-amber-700 text-white transition-colors" style="border-radius:0" onclick="markForDiscount(\'' + alert.sku + '\')">Mark for Discount</button>';
+            break;
+    }
+    
+    buttons += '<button class="px-3 py-1 text-sm border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors" style="border-radius:0" onclick="dismissAlert(\'' + alert.sku + '\', \'' + alert.type + '\')">Dismiss</button>';
+    
+    return buttons;
+}
+
+function getAlertClass(severity) {
+    switch(severity) {
+        case 'critical': return 'bg-red-50 border-red-200 text-red-800';
+        case 'warning': return 'bg-amber-50 border-amber-200 text-amber-800';
+        case 'info': return 'bg-blue-50 border-blue-200 text-blue-800';
+        default: return 'bg-slate-50 border-slate-200 text-slate-800';
+    }
+}
+
+function getAlertIcon(type) {
+    switch(type) {
+        case 'low_stock': return 'fas fa-box-open';
+        case 'stock_breaks': return 'fas fa-ban';
+        case 'stagnated': return 'fas fa-pause';
+        default: return 'fas fa-bell';
+    }
+}
+
+function getSeverityBadgeClass(severity) {
+    switch(severity) {
+        case 'critical': return 'bg-red-100 text-red-800';
+        case 'warning': return 'bg-amber-100 text-amber-800';
+        case 'info': return 'bg-blue-100 text-blue-800';
+        default: return 'bg-slate-100 text-slate-800';
+    }
+}
+
+function getTimeAgo(timestamp) {
+    const now = new Date();
+    const alertTime = new Date(timestamp);
+    const diffMs = now - alertTime;
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} days ago`;
+}
+
+function filterAlerts() {
+    const typeFilter = document.getElementById('alert-type-filter').value;
+    const severityFilter = document.getElementById('severity-filter').value;
+    const skuFilter = document.getElementById('sku-filter').value.toLowerCase();
+    
+    filteredAlerts = allAlerts.filter(alert => {
+        return (!typeFilter || alert.type === typeFilter) &&
+               (!severityFilter || alert.severity === severityFilter) &&
+               (!skuFilter || alert.sku.toLowerCase().includes(skuFilter));
+    });
+    
+    renderAlerts();
+}
+
+function clearFilters() {
+    document.getElementById('alert-type-filter').value = '';
+    document.getElementById('severity-filter').value = '';
+    document.getElementById('sku-filter').value = '';
+    filteredAlerts = [...allAlerts];
+    renderAlerts();
+}
+
+function refreshAlerts() {
+    loadAlerts();
+}
+
+function configureAlerts() {
+    document.getElementById('configModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('configModal').classList.add('hidden');
+}
+
+function saveConfiguration() {
+    // Placeholder for saving configuration
+    alert('Alert configuration saved successfully!');
+    closeModal();
+}
+
+// Action functions
+// Navegación de detalle ahora es por enlace, no botón JS
+function viewAlertDetails(sku, type) {
+    // Deprecated: navegación ahora es por <a href>
+}
+
+function createPurchaseOrder(sku) {
+    if (confirm(`Create purchase order for ${sku}?`)) {
+        alert(`Purchase order created for ${sku}`);
+    }
+}
+
+function markForDiscount(sku) {
+    if (confirm(`Mark ${sku} for discount due to approaching expiration?`)) {
+        alert(`${sku} marked for discount`);
+    }
+}
+
+function dismissAlert(sku, type) {
+    if (confirm(`Dismiss this alert for ${sku}?`)) {
+        // Remove from display
+        filteredAlerts = filteredAlerts.filter(alert => !(alert.sku === sku && alert.type === type));
+        allAlerts = allAlerts.filter(alert => !(alert.sku === sku && alert.type === type));
+        renderAlerts();
+        
+        // Update summary
+        const criticalCount = allAlerts.filter(a => a.severity === 'critical').length;
+        const warningCount = allAlerts.filter(a => a.severity === 'warning').length;
+        const infoCount = allAlerts.filter(a => a.severity === 'info').length;
+        
+        document.getElementById('critical-count').textContent = criticalCount;
+        document.getElementById('warning-count').textContent = warningCount;
+        document.getElementById('info-count').textContent = infoCount;
+        document.getElementById('total-count').textContent = allAlerts.length;
+    }
+}
+</script>
+{% endblock %}

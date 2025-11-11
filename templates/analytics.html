@@ -1,0 +1,729 @@
+{% extends "layout.html" %}
+
+{% block title %}Analytics - NexStock{% endblock %}
+
+{% block page_title %}Analytics{% endblock %}
+{% block page_description %}Business Intelligence Dashboard{% endblock %}
+
+{% block main %}
+
+<div class="space-y-6 bg-gray-50 p-2 md:p-4" style="min-height:100vh">
+    <!-- Header Section -->
+    <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Analytics Dashboard</h1>
+            <p class="text-slate-500 text-lg">Business Intelligence • Real-time Data</p>
+        </div>
+    </div>
+
+    <!-- KPI Overview Strip -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-boxes text-2xl text-blue-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total SKUs</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="total-skus"></p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-cubes text-2xl text-green-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Inventory</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="total-inventory"></p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exchange-alt text-2xl text-yellow-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Transactions</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="total-transactions"></p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-chart-line text-2xl text-purple-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Active SKUs</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="active-skus"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Range Selector -->
+    <div class="bg-white shadow-sm border border-gray-200 p-4" style="border-radius:0">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-calendar text-gray-600"></i>
+            </div>
+            <select id="date-range" class="form-select form-select-sm" style="border-radius:0">
+                <option value="7">Last 7 days</option>
+                <option value="30" selected>Last 30 days</option>
+                <option value="60">Last 60 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="180">Last 6 months</option>
+                <option value="365">Last year</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top SKUs Chart -->
+        <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-800">Top SKUs by Volume</h3>
+                    <p class="text-xs text-gray-500 mt-1">Net volume (incoming - outgoing)</p>
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="h-64 bg-gray-50 flex items-center justify-center" style="border-radius:0">
+                    <canvas id="topSkusChart" width="400" height="256"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Turnover Analysis -->
+        <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-800">Turnover Analysis</h3>
+                    <p class="text-xs text-gray-500 mt-1">Inventory turnover ratio - Higher is better</p>
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="h-64 bg-gray-50 flex items-center justify-center" style="border-radius:0">
+                    <canvas id="turnoverChart" width="400" height="256"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demand Analysis Table -->
+    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
+        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-medium text-gray-800">Demand Analysis</h3>
+            </div>
+        </div>
+        <div class="overflow-hidden">
+            <table class="min-w-full" id="demand-analysis-table">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>Product</span>
+                                <i class="fas fa-sort text-gray-400 text-xs"></i>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>Mean Demand</span>
+                                <i class="fas fa-sort text-gray-400 text-xs"></i>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>Net Volume</span>
+                                <i class="fas fa-sort text-gray-400 text-xs"></i>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>Transactions</span>
+                                <i class="fas fa-sort text-gray-400 text-xs"></i>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>Variability (CV)</span>
+                                <i class="fas fa-sort text-gray-400 text-xs"></i>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                            Status
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    <tr>
+                        <td colspan="6" class="px-4 py-6 text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <div class="animate-spin h-4 w-4 border-b-2 border-gray-600"></div>
+                                <span class="text-xs text-gray-500">Loading analytics data...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let topSkusChart, turnoverChart;
+
+// Load dashboard data with enhanced error handling
+function loadDashboard() {
+    showLoadingState();
+    loadOverviewData();
+    loadTrendsData();
+}
+
+function loadOverviewData() {
+    fetch('/api/analytics/overview')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                console.error('API Error:', data.error);
+                showErrorAlert('Failed to load analytics overview data');
+                showErrorState();
+                return;
+            }
+            
+            // Update overview cards with smooth animation
+            updateCardValue('total-skus', data.inventory_stats?.total_skus || 0);
+            updateCardValue('total-inventory', Math.round(data.inventory_stats?.total_volume || 0));
+            updateCardValue('total-transactions', data.transaction_stats?.total_transactions || 0);
+            updateCardValue('active-skus', data.transaction_stats?.active_skus || 0);
+            
+            // Create charts with error handling
+            try {
+                if (data.top_skus && data.top_skus.length > 0) {
+                    createTopSkusChart(data.top_skus);
+                } else {
+                    showNoDataChart('topSkusChart', 'No SKU data available');
+                }
+                
+                if (data.turnover_data && data.turnover_data.length > 0) {
+                    createTurnoverChart(data.turnover_data);
+                } else {
+                    showNoDataChart('turnoverChart', 'No turnover data available');
+                }
+            } catch (chartError) {
+                console.error('Chart creation error:', chartError);
+                showErrorAlert('Failed to create analytics charts');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading overview:', error);
+            showErrorAlert('Network error loading analytics data');
+            showErrorState();
+        });
+}
+
+function updateCardValue(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        // Replace loading skeleton with actual value
+        element.innerHTML = value.toLocaleString();
+        element.classList.add('animate-pulse');
+        setTimeout(() => element.classList.remove('animate-pulse'), 500);
+    }
+}
+
+function showLoadingState() {
+    // Add loading animation to overview cards
+    const cards = ['total-skus', 'total-inventory', 'total-transactions', 'active-skus'];
+    cards.forEach(cardId => {
+        const element = document.getElementById(cardId);
+        if (element) {
+            element.innerHTML = '<div class="animate-pulse bg-slate-200 h-6 w-12 rounded"></div>';
+        }
+    });
+}
+
+function showErrorState() {
+    const cards = ['total-skus', 'total-inventory', 'total-transactions', 'active-skus'];
+    cards.forEach(cardId => {
+        const element = document.getElementById(cardId);
+        if (element) {
+            element.innerHTML = '<span class="text-red-600 text-sm font-medium">ERROR</span>';
+        }
+    });
+}
+
+function showErrorAlert(message) {
+    // Remove existing alerts
+    const existingAlerts = document.querySelectorAll('.error-alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    const alertContainer = document.createElement('div');
+    alertContainer.className = 'error-alert fixed top-4 right-4 z-50 max-w-sm';
+    alertContainer.innerHTML = `
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg" role="alert">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span class="block sm:inline">${message}</span>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" class="ml-2 text-red-700 hover:text-red-900">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(alertContainer);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertContainer.parentNode) {
+            alertContainer.remove();
+        }
+    }, 5000);
+}
+
+function loadTrendsData() {
+    fetch('/api/analytics/trends')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                console.error('Trends API Error:', data.error);
+                showErrorAlert('Failed to load demand analysis data');
+                return;
+            }
+            
+            // Update demand analysis table with error handling
+            try {
+                updateDemandAnalysisTable(data.demand_analysis);
+            } catch (tableError) {
+                console.error('Table update error:', tableError);
+                showErrorAlert('Failed to update demand analysis table');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading trends:', error);
+            showErrorAlert('Network error loading trends data');
+            // Show empty state in table
+            updateDemandAnalysisTable([]);
+        });
+}
+
+function createTopSkusChart(data) {
+    const canvas = document.getElementById('topSkusChart');
+    if (!canvas) {
+        console.error('Chart canvas not found: topSkusChart');
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    if (topSkusChart) {
+        topSkusChart.destroy();
+    }
+    
+    // Sort by SKU number/name
+    const sortedData = [...data].sort((a, b) => {
+        const skuA = a.SKU || '';
+        const skuB = b.SKU || '';
+        return skuA.localeCompare(skuB, undefined, { numeric: true });
+    });
+    const chartData = sortedData.slice(0, 8);
+    
+    // Color-code by net volume: positive in green, negative in red
+    const getBarColor = (value) => {
+        if (value > 0) return 'rgba(16, 185, 129, 0.8)';  // Positive: Green
+        if (value < 0) return 'rgba(239, 68, 68, 0.8)';   // Negative: Red
+        return 'rgba(156, 163, 175, 0.8)'; // Zero: Gray
+    };
+    
+    topSkusChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.map(item => item.SKU || 'Unknown'),
+            datasets: [{
+                label: 'Net Volume (units)',
+                data: chartData.map(item => item.total_volume || 0),
+                backgroundColor: chartData.map((item) => getBarColor(item.total_volume)),
+                borderColor: chartData.map((item) => getBarColor(item.total_volume).replace(/[\d.]+\)$/, '1)')),
+                borderWidth: 1,
+                borderRadius: 4,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                    titleColor: '#F1F5F9',
+                    bodyColor: '#CBD5E1',
+                    borderColor: 'rgba(51, 65, 85, 1)',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed.y;
+                            const sign = value >= 0 ? '+' : '';
+                            return `Net Volume: ${sign}${value.toLocaleString()} units`;
+                        }
+                    }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    formatter: (value) => value.toLocaleString(),
+                    color: '#475569',
+                    font: {
+                        size: 10,
+                        weight: 'bold'
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    grace: '5%',  // Add some padding above/below the data
+                    title: {
+                        display: true,
+                        text: 'Net Volume (units)',
+                        color: '#475569',
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString();
+                        },
+                        color: '#64748B'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'SKU',
+                        color: '#475569',
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#64748B'
+                    }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        },
+        plugins: [{
+            afterDatasetsDraw: function(chart) {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((bar, index) => {
+                        const data = dataset.data[index];
+                        ctx.fillStyle = '#475569';
+                        ctx.font = 'bold 10px sans-serif';
+                        ctx.textAlign = 'center';
+                        // Position label above bar for positive values, below for negative
+                        const yOffset = data >= 0 ? -5 : 15;
+                        const sign = data >= 0 ? '+' : '';
+                        ctx.fillText(sign + data.toLocaleString(), bar.x, bar.y + yOffset);
+                    });
+                });
+            }
+        }]
+    });
+}
+
+function createTurnoverChart(data) {
+    const canvas = document.getElementById('turnoverChart');
+    if (!canvas) {
+        console.error('Chart canvas not found: turnoverChart');
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    if (turnoverChart) {
+        turnoverChart.destroy();
+    }
+    
+    // Deduplicate by SKU - keep first occurrence of each unique SKU
+    const seenSkus = new Set();
+    const uniqueData = data.filter(item => {
+        if (seenSkus.has(item.SKU)) {
+            console.warn(`Duplicate SKU found: ${item.SKU}, skipping...`);
+            return false;
+        }
+        seenSkus.add(item.SKU);
+        return true;
+    });
+    
+    console.log('Original data count:', data.length, 'Unique SKUs:', uniqueData.length);
+    
+    // Sort by SKU number/name
+    const sortedData = [...uniqueData].sort((a, b) => {
+        const skuA = a.SKU || '';
+        const skuB = b.SKU || '';
+        return skuA.localeCompare(skuB, undefined, { numeric: true });
+    });
+    const chartData = sortedData.slice(0, 6);
+    
+    const palette = [
+        'rgba(37, 99, 235, 0.85)',   // blue
+        'rgba(16, 185, 129, 0.85)',  // green
+        'rgba(234, 179, 8, 0.85)',   // yellow
+        'rgba(251, 146, 60, 0.85)',  // orange
+        'rgba(168, 85, 247, 0.85)',  // purple
+        'rgba(239, 68, 68, 0.85)',   // red
+    ];
+    
+    // Calculate average turnover for center display
+    const avgTurnover = chartData.reduce((sum, item) => sum + parseFloat(item.turnover_ratio || 0), 0) / chartData.length;
+    
+    // Helper function to get performance badge
+    const getPerformanceBadge = (turnover) => {
+        if (turnover >= 2.0) return '⭐ Excellent';
+        if (turnover >= 1.0) return '✓ Good';
+        if (turnover >= 0.5) return '⚠ Moderate';
+        return '◆ Poor';
+    };
+    
+    turnoverChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: chartData.map(item => {
+                const sku = item.SKU || 'Unknown';
+                const turnover = parseFloat(item.turnover_ratio || 0);
+                const badge = getPerformanceBadge(turnover);
+                return `${sku}: ${turnover.toFixed(2)} ${badge}`;
+            }),
+            datasets: [{
+                data: chartData.map(item => parseFloat(item.turnover_ratio || 0)),
+                backgroundColor: chartData.map((_, i) => palette[i % palette.length]),
+                borderColor: chartData.map((_, i) => palette[i % palette.length].replace('0.85', '1')),
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true,
+                        font: {
+                            size: 11
+                        },
+                        generateLabels: function(chart) {
+                            const data = chart.data;
+                            return data.labels.map((label, i) => ({
+                                text: label,
+                                fillStyle: data.datasets[0].backgroundColor[i],
+                                hidden: false,
+                                index: i
+                            }));
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                    titleColor: '#F1F5F9',
+                    bodyColor: '#CBD5E1',
+                    borderColor: 'rgba(51, 65, 85, 1)',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const percentage = ((value / context.dataset.data.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
+                            const badge = getPerformanceBadge(value);
+                            return [
+                                `Turnover: ${value.toFixed(2)}`,
+                                `Share: ${percentage}%`,
+                                `Status: ${badge}`
+                            ];
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        },
+        plugins: [{
+            id: 'centerText',
+            beforeDraw: function(chart) {
+                if (!chart.chartArea) return;
+                
+                const { width, height, ctx, chartArea } = chart;
+                ctx.save();
+                
+                // Calculate center based on chart area (not including legend)
+                const centerX = (chartArea.left + chartArea.right) / 2;
+                const centerY = (chartArea.top + chartArea.bottom) / 2;
+                
+                // Draw main value
+                ctx.font = 'bold 24px sans-serif';
+                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#1E293B';
+                const text = avgTurnover.toFixed(2);
+                ctx.fillText(text, centerX, centerY - 8);
+                
+                // Draw label
+                ctx.font = '11px sans-serif';
+                ctx.fillStyle = '#64748B';
+                ctx.fillText('Avg Turnover', centerX, centerY + 12);
+                
+                ctx.restore();
+            }
+        }]
+    });
+}
+
+function updateDemandAnalysisTable(data) {
+    const tbody = document.querySelector('#demand-analysis-table tbody');
+    tbody.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-4 py-8 text-center">
+                    <div class="flex flex-col items-center space-y-2">
+                        <i class="fas fa-chart-line text-3xl text-slate-300"></i>
+                        <p class="text-sm text-slate-600 font-medium">NO DATA AVAILABLE</p>
+                        <p class="text-xs text-slate-500">Add transactions to generate demand patterns</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    data.slice(0, 10).forEach((item, index) => {
+        const variability = parseFloat(item.coefficient_variation || 0);
+        let statusBadge = '';
+        
+        if (variability < 0.2) {
+            statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-300">STABLE</span>';
+        } else if (variability < 0.5) {
+            statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">VARIABLE</span>';
+        } else {
+            statusBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-200">VOLATILE</span>';
+        }
+        
+        const row = tbody.insertRow();
+        row.className = 'hover:bg-slate-50 transition-colors';
+        row.innerHTML = `
+            <td class="px-4 py-3 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-6 w-6 bg-slate-100 rounded flex items-center justify-center">
+                        <span class="text-xs font-medium text-slate-600">${index + 1}</span>
+                    </div>
+                    <div class="ml-2">
+                        <div class="text-sm font-medium text-slate-800">${item.SKU}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700 font-mono">
+                ${parseFloat(item.mean_demand || 0).toFixed(2)}
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700 font-mono">
+                ${item.total_volume ? parseInt(item.total_volume).toLocaleString() : 'N/A'}
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700 font-mono">
+                ${item.transaction_count || 'N/A'}
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700 font-mono">
+                ${variability.toFixed(3)}
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                ${statusBadge}
+            </td>
+        `;
+    });
+}
+
+function showNoDataChart(canvasId, message) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw "No Data" message
+    ctx.fillStyle = '#64748B';
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(message.toUpperCase(), canvas.width / 2, canvas.height / 2);
+    
+    // Draw icon
+    ctx.fillStyle = '#CBD5E1';
+    ctx.font = '20px system-ui, sans-serif';
+    ctx.fillText('■', canvas.width / 2, (canvas.height / 2) - 25);
+}
+
+function refreshDashboard() {
+    loadDashboard();
+}
+
+function exportAnalytics() {
+    // Placeholder for export functionality
+    alert('Export functionality will be implemented with CSV/Excel export feature');
+}
+
+// Date range selector handler - applies to all charts and table
+document.getElementById('date-range')?.addEventListener('change', function() {
+    const days = this.value;
+    console.log(`Refreshing all analytics for last ${days} days`);
+    // In a full implementation, this would pass the date range to the API
+    // For now, it will just refresh with the default data
+    loadDashboard();
+    
+    // Show feedback to user
+    const feedbackEl = document.createElement('div');
+    feedbackEl.className = 'fixed top-4 right-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-2 rounded shadow-lg z-50';
+    feedbackEl.innerHTML = `<i class="fas fa-sync fa-spin mr-2"></i> Updating all analytics for last ${days} days...`;
+    document.body.appendChild(feedbackEl);
+    
+    setTimeout(() => {
+        feedbackEl.remove();
+    }, 2000);
+});
+
+// Load dashboard on page load
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+{% endblock %}

@@ -4,28 +4,505 @@
     Transactions
 {% endblock %}
 
+{% block page_title %}Transaction History{% endblock %}
+
 {% block main %}
-    <h2>Transactions</h2>
-    <table class = "table table">
-        <thead class = "thead-light">
-            <tr>
-                <th>Date</th>
-                <th>Document Type</th>
-                <th>Document Number</th>
-                <th>SKU</th>
-                <th>Volume</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for trade in trades %}
-            <tr>
-                <td>{{ trade.DATE }}</td>
-                <td>{{ trade.TYPE }}</td>
-                <td>{{ trade.DCO }}</td>
-                <td>{{ trade.SKU }}</td>
-                <td>{{ trade.VOLUME }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="space-y-6">
+    <!-- Header with Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-primary-900">📋 Transaction History</h1>
+            <p class="mt-2 text-sm text-primary-600">Manage and view all transaction records</p>
+        </div>
+        <div class="mt-4 sm:mt-0 flex space-x-3">
+            <button 
+                type="button" 
+                onclick="refreshTransactions()"
+                class="inline-flex items-center px-4 py-2 border border-primary-300 text-sm font-medium text-primary-700 bg-white hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" style="border-radius:0">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Refresh
+            </button>
+            <button 
+                type="button" 
+                onclick="exportTransactions()"
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium text-white bg-success-600 hover:bg-success-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success-500 transition-colors" style="border-radius:0">
+                <i class="fas fa-download mr-2"></i>
+                Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Filters & Search</h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                    <label for="sku-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter by SKU</label>
+                    <input 
+                        type="text" 
+                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        id="sku-filter" 
+                        placeholder="Enter SKU..." 
+                        onkeyup="applyFilters()">
+                </div>
+                <div>
+                    <label for="date-from-filter" class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                    <input 
+                        type="date" 
+                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        id="date-from-filter" 
+                        onchange="applyFilters()">
+                </div>
+                <div>
+                    <label for="date-to-filter" class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                    <input 
+                        type="date" 
+                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        id="date-to-filter" 
+                        onchange="applyFilters()">
+                </div>
+                <div>
+                    <label for="doctype-filter" class="block text-sm font-medium text-gray-700 mb-2">Document Type</label>
+                    <select 
+                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        id="doctype-filter" 
+                        onchange="applyFilters()">
+                        <option value="">All Documents</option>
+                        <option value="Invoices">Invoices</option>
+                        <option value="Receipts">Receipts</option>
+                        <option value="Purchase Orders (PO)">Purchase Orders (PO)</option>
+                        <option value="Credit Notes">Credit Notes</option>
+                        <option value="Debit Notes">Debit Notes</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="rows-per-page" class="block text-sm font-medium text-gray-700 mb-2">Rows per page</label>
+                    <select 
+                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        id="rows-per-page" 
+                        onchange="changePageSize()">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="all">All</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button 
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" style="border-radius:0" 
+                    onclick="clearFilters()">
+                    <i class="fas fa-times mr-2"></i>
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Table -->
+    <div class="bg-white shadow-sm border border-gray-200 overflow-hidden" style="border-radius:0">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Transaction Records</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="transactions-table">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th onclick="sortTable(0)" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center space-x-1">
+                                <span>Date</span>
+                                <i class="fas fa-sort text-gray-400" id="sort-0"></i>
+                            </div>
+                        </th>
+                        <th onclick="sortTable(1)" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center space-x-1">
+                                <span>Document Type</span>
+                                <i class="fas fa-sort text-gray-400" id="sort-1"></i>
+                            </div>
+                        </th>
+                        <th onclick="sortTable(2)" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center space-x-1">
+                                <span>Document Number</span>
+                                <i class="fas fa-sort text-gray-400" id="sort-2"></i>
+                            </div>
+                        </th>
+                        <th onclick="sortTable(3)" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center space-x-1">
+                                <span>SKU</span>
+                                <i class="fas fa-sort text-gray-400" id="sort-3"></i>
+                            </div>
+                        </th>
+                        <th onclick="sortTable(4)" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center justify-end space-x-1">
+                                <span>Volume</span>
+                                <i class="fas fa-sort text-gray-400" id="sort-4"></i>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="transactions-tbody" class="bg-white divide-y divide-gray-200">
+                    {% for trade in trades %}
+                    <tr data-sku="{{ trade.SKU }}" data-volume="{{ trade.VOLUME }}" class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ trade.DATE or 'N/A' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium" style="border-radius:0"
+                                    {% if trade.DOCUMENT_TYPE == 'Invoices' %}bg-blue-100 text-blue-800
+                                    {% elif trade.DOCUMENT_TYPE == 'Receipts' %}bg-green-100 text-green-800
+                                    {% elif trade.DOCUMENT_TYPE == 'Purchase Orders (PO)' %}bg-purple-100 text-purple-800
+                                    {% elif trade.DOCUMENT_TYPE == 'Credit Notes' %}bg-orange-100 text-orange-800
+                                    {% elif trade.DOCUMENT_TYPE == 'Debit Notes' %}bg-red-100 text-red-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ trade.DOCUMENT_TYPE or 'N/A' }}
+                                </span>
+                                {% if trade.DOCUMENT_TYPE == 'Purchase Orders (PO)' %}
+                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600" style="border-radius:0" title="No inventory impact">
+                                        <i class="fas fa-file-alt"></i>
+                                    </span>
+                                {% elif trade.DOCUMENT_TYPE in ['Receipts'] %}
+                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-600" style="border-radius:0" title="Increases inventory">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </span>
+                                {% elif trade.DOCUMENT_TYPE in ['Invoices', 'Credit Notes', 'Debit Notes'] %}
+                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-600" style="border-radius:0" title="Decreases inventory">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                            {{ trade.DOC_NUMBER or 'N/A' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm font-semibold text-primary-900">{{ trade.SKU }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <span class="inline-flex items-center px-2.5 py-0.5 text-sm font-medium" style="border-radius:0"
+                                {% if trade.VOLUME > 0 %}bg-success-100 text-success-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if trade.VOLUME > 0 %}
+                                    <i class="fas fa-plus mr-1"></i>{{ trade.VOLUME }}
+                                {% else %}
+                                    <i class="fas fa-minus mr-1"></i>{{ trade.VOLUME|abs }}
+                                {% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white px-6 py-3 border-t border-gray-200">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div class="text-sm text-gray-700" id="pagination-info">
+                    Showing 1 to 10 of {{ trades|length }} transactions
+                </div>
+                <nav class="mt-3 sm:mt-0" aria-label="Transaction pagination">
+                    <ul class="flex items-center space-x-1" id="pagination-controls">
+                        <!-- Pagination will be generated by JavaScript -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allTransactions = [];
+let filteredTransactions = [];
+let currentPage = 1;
+let rowsPerPage = 10;
+let sortColumn = -1;
+let sortDirection = 'asc';
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadTransactions();
+});
+
+function loadTransactions() {
+    // Get all table rows and store as data
+    const tbody = document.getElementById('transactions-tbody');
+    const rows = tbody.querySelectorAll('tr');
+    
+    allTransactions = Array.from(rows).map(row => {
+        return {
+            date: row.cells[0].textContent.trim(),
+            docType: row.cells[1].textContent.trim(), // Use exact document type
+            docTypeDisplay: row.cells[1].textContent.trim(),
+            docNumber: row.cells[2].textContent.trim(),
+            sku: row.cells[3].textContent.trim(),
+            volume: parseFloat(row.getAttribute('data-volume')),
+            element: row
+        };
+    });
+    
+    filteredTransactions = [...allTransactions];
+    renderTable();
+}
+
+function applyFilters() {
+    const skuFilter = document.getElementById('sku-filter').value.toLowerCase();
+    const doctypeFilter = document.getElementById('doctype-filter').value;
+    const dateFromFilter = document.getElementById('date-from-filter').value;
+    const dateToFilter = document.getElementById('date-to-filter').value;
+    
+    filteredTransactions = allTransactions.filter(transaction => {
+        // SKU filter
+        if (skuFilter && !transaction.sku.toLowerCase().includes(skuFilter)) {
+            return false;
+        }
+        
+        // Document type filter
+        if (doctypeFilter && transaction.docType !== doctypeFilter) {
+            return false;
+        }
+        
+        // Date range filter
+        if (dateFromFilter || dateToFilter) {
+            const transactionDate = transaction.date;
+            
+            // Convert transaction date to Date object for comparison
+            const txDate = new Date(transactionDate);
+            
+            if (dateFromFilter) {
+                const fromDate = new Date(dateFromFilter);
+                if (txDate < fromDate) {
+                    return false;
+                }
+            }
+            
+            if (dateToFilter) {
+                const toDate = new Date(dateToFilter);
+                if (txDate > toDate) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    });
+    
+    currentPage = 1;
+    renderTable();
+}
+
+function clearFilters() {
+    document.getElementById('sku-filter').value = '';
+    document.getElementById('doctype-filter').value = '';
+    document.getElementById('date-from-filter').value = '';
+    document.getElementById('date-to-filter').value = '';
+    
+    filteredTransactions = [...allTransactions];
+    currentPage = 1;
+    renderTable();
+}
+
+function changePageSize() {
+    const newSize = document.getElementById('rows-per-page').value;
+    rowsPerPage = newSize === 'all' ? filteredTransactions.length : parseInt(newSize);
+    currentPage = 1;
+    renderTable();
+}
+
+function sortTable(columnIndex) {
+    if (sortColumn === columnIndex) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortColumn = columnIndex;
+        sortDirection = 'asc';
+    }
+    
+    filteredTransactions.sort((a, b) => {
+        let valueA, valueB;
+        
+        switch(columnIndex) {
+            case 0: valueA = a.date; valueB = b.date; break;
+            case 1: valueA = a.docTypeDisplay; valueB = b.docTypeDisplay; break;
+            case 2: valueA = a.docNumber; valueB = b.docNumber; break;
+            case 3: valueA = a.sku; valueB = b.sku; break;
+            case 4: valueA = a.volume; valueB = b.volume; break;
+            default: return 0;
+        }
+        
+        if (columnIndex === 4) { // Volume column - numeric sort
+            return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+        } else { // Text sort
+            if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+            if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        }
+    });
+    
+    updateSortIcons(columnIndex);
+    renderTable();
+}
+
+function updateSortIcons(activeColumn) {
+    // Reset all sort icons
+    for (let i = 0; i < 5; i++) {
+        const icon = document.getElementById(`sort-${i}`);
+        if (icon) {
+            icon.className = 'fas fa-sort';
+        }
+    }
+    
+    // Set active column icon
+    const activeIcon = document.getElementById(`sort-${activeColumn}`);
+    if (activeIcon) {
+        activeIcon.className = sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+    }
+}
+
+function renderTable() {
+    const tbody = document.getElementById('transactions-tbody');
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = rowsPerPage === filteredTransactions.length ? 
+                      filteredTransactions.length : 
+                      Math.min(startIndex + rowsPerPage, filteredTransactions.length);
+    
+    // Clear tbody
+    tbody.innerHTML = '';
+    
+    // Add filtered and paginated rows
+    for (let i = startIndex; i < endIndex; i++) {
+        if (filteredTransactions[i]) {
+            tbody.appendChild(filteredTransactions[i].element.cloneNode(true));
+        }
+    }
+    
+    // Update pagination
+    updatePagination();
+}
+
+function updatePagination() {
+    const totalPages = Math.ceil(filteredTransactions.length / rowsPerPage);
+    const paginationControls = document.getElementById('pagination-controls');
+    const paginationInfo = document.getElementById('pagination-info');
+    
+    const startIndex = (currentPage - 1) * rowsPerPage + 1;
+    const endIndex = Math.min(currentPage * rowsPerPage, filteredTransactions.length);
+    
+    paginationInfo.textContent = `Showing ${startIndex} to ${endIndex} of ${filteredTransactions.length} transactions`;
+    
+    if (totalPages <= 1) {
+        paginationControls.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    
+    // Previous button
+    const prevDisabled = currentPage === 1;
+    html += `<li>
+                <a href="#" onclick="${prevDisabled ? 'return false;' : `changePage(${currentPage - 1})`}" 
+                   class="relative inline-flex items-center px-2 py-2 border ${prevDisabled ? 'border-gray-300 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-500 hover:bg-gray-50'} bg-white text-sm font-medium" style="border-radius:0">
+                    <span class="sr-only">Previous</span>
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+             </li>`;
+    
+    // Show first page
+    if (totalPages > 1) {
+        const isActive = currentPage === 1;
+        html += `<li>
+                    <a href="#" onclick="changePage(1)" 
+                       class="relative inline-flex items-center px-4 py-2 border text-sm font-medium ${isActive ? 'z-10 bg-primary-50 border-primary-500 text-primary-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} bg-white">
+                        1
+                    </a>
+                 </li>`;
+    }
+    
+    // Show ellipsis if needed
+    if (currentPage > 3) {
+        html += `<li>
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        ...
+                    </span>
+                 </li>`;
+    }
+    
+    // Show pages around current page
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+        const isActive = i === currentPage;
+        html += `<li>
+                    <a href="#" onclick="changePage(${i})" 
+                       class="relative inline-flex items-center px-4 py-2 border text-sm font-medium ${isActive ? 'z-10 bg-primary-50 border-primary-500 text-primary-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} bg-white">
+                        ${i}
+                    </a>
+                 </li>`;
+    }
+    
+    // Show ellipsis if needed
+    if (currentPage < totalPages - 2) {
+        html += `<li>
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        ...
+                    </span>
+                 </li>`;
+    }
+    
+    // Show last page (if more than 1 page)
+    if (totalPages > 1) {
+        const isActive = currentPage === totalPages;
+        html += `<li>
+                    <a href="#" onclick="changePage(${totalPages})" 
+                       class="relative inline-flex items-center px-4 py-2 border text-sm font-medium ${isActive ? 'z-10 bg-primary-50 border-primary-500 text-primary-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} bg-white">
+                        ${totalPages}
+                    </a>
+                 </li>`;
+    }
+    
+    // Next button
+    const nextDisabled = currentPage === totalPages;
+    html += `<li>
+                <a href="#" onclick="${nextDisabled ? 'return false;' : `changePage(${currentPage + 1})`}" 
+                   class="relative inline-flex items-center px-2 py-2 border ${nextDisabled ? 'border-gray-300 text-gray-300 cursor-not-allowed' : 'border-gray-300 text-gray-500 hover:bg-gray-50'} bg-white text-sm font-medium" style="border-radius:0">
+                    <span class="sr-only">Next</span>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+             </li>`;
+    
+    paginationControls.innerHTML = html;
+}
+
+function changePage(page) {
+    const totalPages = Math.ceil(filteredTransactions.length / rowsPerPage);
+    if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        renderTable();
+    }
+}
+
+function refreshTransactions() {
+    location.reload();
+}
+
+function exportTransactions() {
+    // Create CSV content
+    let csv = 'Date,Document Type,Document Number,SKU,Volume,Type\n';
+    
+    filteredTransactions.forEach(transaction => {
+        const type = transaction.volume > 0 ? 'IN' : 'OUT';
+        csv += `${transaction.date},${transaction.docTypeDisplay},${transaction.docNumber},${transaction.sku},${transaction.volume},${type}\n`;
+    });
+    
+    // Download CSV
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'transactions_export.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+</script>
 {% endblock %}

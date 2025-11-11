@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - NexStock{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_description %}Main Control Panel{% endblock %}
+
+
+{% block main %}
+<div class="space-y-6 bg-gray-50 p-2 md:p-4" style="min-height:100vh">
+    <!-- Welcome Section -->
+    <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Welcome to NexStock</h1>
+            <p class="text-slate-500 text-lg">Professional Inventory Management System</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-boxes text-2xl text-blue-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total Products</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ total_products }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-chart-line text-2xl text-green-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total Stock</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ total_stock | int }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTE: Low Stock summary removed from quick stats to avoid duplication with Alerts row below.
+             The alerts row (populated via /api/alerts/summary) now provides the authoritative low-stock count. -->
+
+        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exchange-alt text-2xl text-yellow-500"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Transactions</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ total_transactions }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts row: clean white card style -->
+    <div class="p-3 bg-white shadow-sm border border-gray-200 mt-8 relative" style="border-radius:0">
+        <div class="flex items-center mb-3">
+            <div class="w-2 h-2 bg-yellow-500 mr-2" style="border-radius:0"></div>
+            <h3 class="text-sm font-semibold text-gray-900">Alerts</h3>
+            <p class="text-xs text-gray-500 ml-3">Automatically detected issues</p>
+            <a href="/alerts" class="absolute right-4 top-3 text-sm text-blue-600 hover:underline font-medium">View details</a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+            <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-2xl text-yellow-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-700">Low Stock Items</p>
+                        <p id="card-low-stock" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-ban text-2xl text-blue-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-700">Stock Breaks</p>
+                        <p id="card-stock-breaks" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-pause text-2xl text-green-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-700">Stagnated Items</p>
+                        <p id="card-stagnated" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <a href="/inventory" class="block bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-boxes text-2xl text-blue-500"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Manage Inventory</h3>
+                    <p class="text-gray-500">View and manage stock levels</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="/simulate" class="block bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-play-circle text-2xl text-yellow-500"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Run Simulation</h3>
+                    <p class="text-gray-500">Predict demand patterns</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="/optimize" class="block bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" style="border-radius:0">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-cogs text-2xl text-green-500"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Optimize Purchases</h3>
+                    <p class="text-gray-500">Calculate optimal orders</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Fetch summary counts and populate cards
+async function refreshAlertCards(){
+    try{
+        const res = await fetch('/api/alerts/summary');
+        if(!res.ok) return;
+        const data = await res.json();
+        document.getElementById('card-low-stock').textContent = data.low_stock_count || 0;
+        document.getElementById('card-stock-breaks').textContent = data.stock_break_count || 0;
+        document.getElementById('card-stagnated').textContent = data.stagnated_count || 0;
+    }catch(e){
+        console.error('Failed to refresh alert cards', e);
+    }
+}
+
+// Run once on load
+document.addEventListener('DOMContentLoaded', function(){
+    refreshAlertCards();
+    // Optionally refresh periodically
+    setInterval(refreshAlertCards, 1000 * 60 * 2); // every 2 minutes
+});
+</script>
+{% endblock %}

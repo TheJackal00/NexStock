@@ -1,103 +1,220 @@
 {% extends "layout.html" %}
 
-{% block title %}
-    Best Strategies
-{% endblock %}
+{% block title %}Optimization Results - NexStock{% endblock %}
+
+{% block page_title %}Optimization Results{% endblock %}
+{% block page_description %}Best purchasing strategies for each SKU{% endblock %}
 
 {% block main %}
-    <div class="container py-4">
-        <h1 class="display-4 text-center mb-5">Best Strategy per SKU</h1>
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+        <h1 class="text-3xl font-bold text-center text-gray-900 mb-2">Best Strategy per SKU</h1>
+        <p class="text-center text-gray-600">Optimized purchasing schedules based on demand simulation</p>
+        
+        {% if not show_solution %}
+        <div class="text-center mt-6">
+            <form method="POST">
+                <input type="hidden" name="action" value="show_solution">
+                <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors" style="border-radius:0">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    Show Solution
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if show_solution %}
+    <!-- SKU Strategies -->
+    <div class="space-y-6">
         {% for sku, info in best_strategies.items() %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>SKU: {{ sku }} - {{ product_info[sku]['NAME'] }}</h3>
-                </div>
-                <div class="card-body">
+    <div class="bg-white shadow-sm border border-gray-200 overflow-hidden" style="border-radius:0">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900">SKU: {{ sku }}</h3>
+                        <p class="text-gray-600">{{ product_info[sku]['NAME'] }}</p>
+                    </div>
                     {% if info %}
-                        <p><strong>Best Iteration:</strong> {{ info.best_iteration }}</p>
-                        <p><strong>Best Solution Cost:</strong> ${{ "%.2f"|format(info.average_cost) }}</p>
-                        <h5>Purchase Schedule:</h5>
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Day</th>
-                                    <th>Order Qty</th>
-                                    <th>Delivery Day</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for order in info.strategy %}
-                                    {% if order.quantity > 0 %}
-                                        <tr>
-                                            <td>{{ order.day + 1 }}</td>
-                                            <td>{{ order.quantity }}</td>
-                                            <td>
-                                                {% if order.delivery_day is not none %}
-                                                    {{ order.delivery_day + 1 }}
-                                                {% else %}
-                                                    N/A
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                        <p class="text-danger">No valid strategies found for this SKU.</p>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-500">Best Iteration</div>
+                            <div class="text-lg font-bold text-blue-600">#{{ info.best_iteration }}</div>
+                        </div>
                     {% endif %}
                 </div>
             </div>
-        {% endfor %}
+            
+            <div class="p-6">
+                {% if info %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-green-50 p-4" style="border-radius:0">
+                            <div class="flex items-center">
+                                <i class="fas fa-dollar-sign text-green-600 text-xl mr-3"></i>
+                                <div>
+                                    <div class="text-sm text-green-600 font-medium">Optimized Cost</div>
+                                    <div class="text-2xl font-bold text-green-800">${{ "{:,.0f}".format(info.average_cost) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-4" style="border-radius:0">
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-alt text-blue-600 text-xl mr-3"></i>
+                                <div>
+                                    <div class="text-sm text-blue-600 font-medium">Total Orders</div>
+                                    <div class="text-2xl font-bold text-blue-800">
+                                        {{ info.strategy | selectattr('quantity', 'gt', 0) | list | length }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        <h2 class="h4 mt-5 mb-3 text-center">Combined Purchase Calendar</h2>
-        <div class="text-end mb-2">
-            <button class="btn btn-outline-success btn-sm" onclick="exportTableToCSV('purchase_calendar.csv')">
-                Export as CSV
-            </button>
+                    <div class="bg-gray-50 p-4" style="border-radius:0">
+                        <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-shopping-cart mr-2"></i>
+                            Purchase Schedule
+                        </h5>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Day</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Qty</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Day</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for order in info.strategy %}
+                                        {% if order.quantity > 0 %}
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ order.day + 1 }}</td>
+                                                <td class="px-4 py-3 text-sm text-gray-900">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800" style="border-radius:0">
+                                                        {{ order.quantity }} units
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3 text-sm text-gray-900">
+                                                    {% if order.delivery_day is not none %}
+                                                        Day {{ order.delivery_day + 1 }}
+                                                    {% else %}
+                                                        <span class="text-gray-400">N/A</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="bg-red-50 border border-red-200 p-4" style="border-radius:0">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-red-600 mr-3"></i>
+                            <p class="text-red-800 font-medium">No valid strategies found for this SKU.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-        <div class="table-responsive mb-5">
-            <table id="calendar-table" class="table table-bordered table-sm align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>DAY</th>
-                        {% for sku in sku_list %}
-                            <th>{{ sku }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in calendar_matrix %}
+        {% endfor %}
+    </div>
+
+    <!-- Combined Purchase Calendar -->
+    <div class="bg-white shadow-sm border border-gray-200 overflow-hidden" style="border-radius:0">
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-900">Combined Purchase Calendar</h2>
+                    <p class="text-gray-600">Consolidated view of all SKU purchase schedules</p>
+                </div>
+                <button onclick="exportTableToCSV('purchase_calendar.csv')" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" style="border-radius:0">
+                    <i class="fas fa-download mr-2"></i>
+                    Export CSV
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="overflow-x-auto">
+                <table id="calendar-table" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <td>{{ row.day }}</td>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50">
+                                <div class="flex items-center">
+                                    <i class="fas fa-calendar mr-1"></i>
+                                    Day
+                                </div>
+                            </th>
                             {% for sku in sku_list %}
-                                <td>{% if row[sku] %}{{ row[sku] }}{% endif %}</td>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <div class="flex items-center justify-center">
+                                        <i class="fas fa-box mr-1"></i>
+                                        {{ sku }}
+                                    </div>
+                                </th>
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for row in calendar_matrix %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900 sticky left-0 bg-white">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-blue-100 flex items-center justify-center" style="border-radius:0">
+                                            <span class="text-blue-600 font-bold text-xs">{{ row.day }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                {% for sku in sku_list %}
+                                    <td class="px-4 py-3 text-center text-sm">
+                                        {% if row[sku] %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-800" style="border-radius:0">
+                                                {{ row[sku] }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-gray-300">-</span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    <script>
-    function exportTableToCSV(filename) {
-        var csv = [];
-        var rows = document.querySelectorAll("#calendar-table tr");
-        for (var i = 0; i < rows.length; i++) {
-            var row = [], cols = rows[i].querySelectorAll("th, td");
-            for (var j = 0; j < cols.length; j++)
-                row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
-            csv.push(row.join(","));
+    {% endif %}
+</div>
+
+<script>
+function exportTableToCSV(filename) {
+    var csv = [];
+    var rows = document.querySelectorAll("#calendar-table tr");
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll("th, td");
+        for (var j = 0; j < cols.length; j++) {
+            // Clean the text content and handle empty cells
+            var cellText = cols[j].innerText.replace(/"/g, '""').trim();
+            if (cellText === '-') cellText = '';
+            row.push('"' + cellText + '"');
         }
-        // Download CSV
-        var csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
-        var downloadLink = document.createElement("a");
-        downloadLink.download = filename;
-        downloadLink.href = window.URL.createObjectURL(csvFile);
-        downloadLink.style.display = "none";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
+        csv.push(row.join(","));
     }
-    </script>
+    
+    // Create and download CSV file
+    var csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+    var downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+</script>
 {% endblock %}
