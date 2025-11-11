@@ -16,7 +16,7 @@ def init_database():
                  (SKU TEXT, VOLUME INTEGER, DATE TEXT)''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS transactions
-                 (SKU TEXT, VOLUME INTEGER, DOCTYPE TEXT, DOCNUM TEXT, DATE TEXT)''')
+                 (SKU TEXT, VOLUME INTEGER, DOCUMENT_TYPE TEXT, DOC_NUMBER TEXT, DATE TEXT)''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS simulation
                  (SKU TEXT, Iteration INTEGER, Day INTEGER, DEMAND INTEGER, LEAD_TIME INTEGER, STOCK INTEGER)''')
@@ -50,9 +50,9 @@ def init_database():
             date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
             for sku in ['001', '002', '003', '004', '005']:
                 # Incoming transaction
-                transactions.append((sku, 50, 'Purchase Order', f'PO-{i:03d}', date))
+                transactions.append((sku, 50, 'Purchase Orders (PO)', f'PO-{i:03d}', date))
                 # Outgoing transaction
-                transactions.append((sku, -30, 'Invoice', f'INV-{i:03d}', date))
+                transactions.append((sku, -30, 'Invoices', f'INV-{i:03d}', date))
         
         c.executemany("INSERT INTO transactions VALUES (?,?,?,?,?)", transactions)
         
