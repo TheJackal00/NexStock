@@ -3531,13 +3531,6 @@ def simple_test():
     """Super simple test"""
     return "Hello World! Flask is working!"
 
-# Initialize database with sample data on startup
-try:
-    from init_db import init_database
-    init_database()
-except Exception as e:
-    print(f"Warning: Could not initialize database: {e}")
-
 if __name__ == "__main__":
     # For development
     app.run(debug=True, host="0.0.0.0", port=5000)  # Deployment verification - 2025-10-08 23:21:06
