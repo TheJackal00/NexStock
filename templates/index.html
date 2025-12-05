@@ -7,139 +7,151 @@
 
 
 {% block main %}
-<div class="space-y-6 bg-gray-50 p-2 md:p-4" style="min-height:100vh">
-    <!-- Welcome Section -->
-    <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-        <div class="text-center">
-            <h1 class="text-3xl font-bold text-slate-800 mb-2">Welcome to NexStock</h1>
-            <p class="text-slate-500 text-lg">Professional Inventory Management System</p>
+<div class="p-0 md:p-6" style="min-height:100vh">
+    <!-- Page Header -->
+    <div class="mb-4 md:mb-8">
+        <h1 class="text-xl md:text-2xl font-semibold numerro-text-primary mb-1">Dashboard</h1>
+        <p class="text-xs md:text-sm numerro-text-secondary">Real-time inventory insights and system overview</p>
+    </div>
+
+    <!-- Key Metrics Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-4 md:mb-8">
+        <!-- Total Products -->
+        <div class="bg-white border numerro-border p-3 md:p-6" style="border-radius:0">
+            <div class="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:justify-between mb-3 md:mb-4">
+                <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Products</div>
+                <div class="w-8 h-8 md:w-10 md:h-10 numerro-bg-blue flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-boxes numerro-blue text-sm md:text-lg"></i>
+                </div>
+            </div>
+            <div class="text-2xl md:text-3xl font-semibold numerro-blue mb-1">{{ total_products }}</div>
+            <div class="text-xs numerro-text-secondary">Total SKUs</div>
+        </div>
+
+        <!-- Total Stock -->
+        <div class="bg-white border numerro-border p-3 md:p-6" style="border-radius:0">
+            <div class="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:justify-between mb-3 md:mb-4">
+                <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Stock</div>
+                <div class="w-8 h-8 md:w-10 md:h-10 numerro-bg-purple flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-cubes numerro-purple text-sm md:text-lg"></i>
+                </div>
+            </div>
+            <div class="text-2xl md:text-3xl font-semibold numerro-purple mb-1">{{ "{:,}".format(total_stock | int) }}</div>
+            <div class="text-xs numerro-text-secondary">Total units</div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="bg-white border numerro-border p-3 md:p-6" style="border-radius:0">
+            <div class="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:justify-between mb-3 md:mb-4">
+                <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Trans.</div>
+                <div class="w-8 h-8 md:w-10 md:h-10 numerro-bg-cyan flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-arrow-right-arrow-left numerro-cyan text-sm md:text-lg"></i>
+                </div>
+            </div>
+            <div class="text-2xl md:text-3xl font-semibold numerro-cyan mb-1">{{ "{:,}".format(total_transactions) }}</div>
+            <div class="text-xs numerro-text-secondary">Movements</div>
+        </div>
+
+        <!-- System Status -->
+        <div class="bg-white border numerro-border p-3 md:p-6" style="border-radius:0">
+            <div class="flex flex-col space-y-2 md:space-y-0 md:flex-row md:items-center md:justify-between mb-3 md:mb-4">
+                <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Status</div>
+                <div class="w-8 h-8 md:w-10 md:h-10 bg-emerald-50 flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-circle-check text-emerald-600 text-sm md:text-lg"></i>
+                </div>
+            </div>
+            <div class="text-3xl font-semibold text-emerald-600 mb-1">Active</div>
+            <div class="text-xs numerro-text-secondary">All systems operational</div>
         </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-boxes text-2xl text-blue-500"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total Products</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ total_products }}</p>
-                </div>
+    <!-- Alerts Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="text-lg font-semibold numerro-text-primary">Alerts</h2>
+                <p class="text-sm numerro-text-secondary mt-1">Automated inventory monitoring</p>
             </div>
+            <a href="/alerts" class="text-sm font-medium numerro-blue hover:opacity-80 transition-opacity">View All →</a>
         </div>
-
-        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-chart-line text-2xl text-green-500"></i>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Low Stock -->
+            <div class="bg-white border-l-4 numerro-border-orange border-t border-r border-b numerro-border p-6" style="border-radius:0">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Low Stock</div>
+                    <div class="w-10 h-10 numerro-bg-orange flex items-center justify-center" style="border-radius:0">
+                        <i class="fas fa-exclamation-triangle numerro-orange text-lg"></i>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total Stock</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ total_stock | int }}</p>
-                </div>
+                <div class="text-3xl font-semibold numerro-orange mb-1" id="card-low-stock">0</div>
+                <div class="text-xs numerro-text-secondary">Items below threshold</div>
             </div>
-        </div>
 
-        <!-- NOTE: Low Stock summary removed from quick stats to avoid duplication with Alerts row below.
-             The alerts row (populated via /api/alerts/summary) now provides the authoritative low-stock count. -->
+            <!-- Stock Breaks -->
+            <div class="bg-white border-l-4 numerro-border-red border-t border-r border-b numerro-border p-6" style="border-radius:0">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Stock Breaks</div>
+                    <div class="w-10 h-10 numerro-bg-red flex items-center justify-center" style="border-radius:0">
+                        <i class="fas fa-ban numerro-red text-lg"></i>
+                    </div>
+                </div>
+                <div class="text-3xl font-semibold numerro-red mb-1" id="card-stock-breaks">0</div>
+                <div class="text-xs numerro-text-secondary">Failed fulfillment attempts</div>
+            </div>
 
-        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-exchange-alt text-2xl text-yellow-500"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Transactions</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ total_transactions }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Alerts row: clean white card style -->
-    <div class="p-3 bg-white shadow-sm border border-gray-200 mt-8 relative" style="border-radius:0">
-        <div class="flex items-center mb-3">
-            <div class="w-2 h-2 bg-yellow-500 mr-2" style="border-radius:0"></div>
-            <h3 class="text-sm font-semibold text-gray-900">Alerts</h3>
-            <p class="text-xs text-gray-500 ml-3">Automatically detected issues</p>
-            <a href="/alerts" class="absolute right-4 top-3 text-sm text-blue-600 hover:underline font-medium">View details</a>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
-            <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-circle text-2xl text-yellow-500"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-700">Low Stock Items</p>
-                        <p id="card-low-stock" class="text-2xl font-semibold text-gray-900">0</p>
+            <!-- Stagnated -->
+            <div class="bg-white border-l-4 numerro-border-neutral border-t border-r border-b numerro-border p-6" style="border-radius:0">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Stagnated</div>
+                    <div class="w-10 h-10 bg-slate-100 flex items-center justify-center" style="border-radius:0">
+                        <i class="fas fa-clock numerro-text-secondary text-lg"></i>
                     </div>
                 </div>
-            </div>
-            <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-ban text-2xl text-blue-500"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-700">Stock Breaks</p>
-                        <p id="card-stock-breaks" class="text-2xl font-semibold text-gray-900">0</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-pause text-2xl text-green-500"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-700">Stagnated Items</p>
-                        <p id="card-stagnated" class="text-2xl font-semibold text-gray-900">0</p>
-                    </div>
-                </div>
+                <div class="text-3xl font-semibold numerro-text-primary mb-1" id="card-stagnated">0</div>
+                <div class="text-xs numerro-text-secondary">Low movement items</div>
             </div>
         </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <a href="/inventory" class="block bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" style="border-radius:0">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-boxes text-2xl text-blue-500"></i>
+    <div>
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold numerro-text-primary">Quick Actions</h2>
+            <p class="text-sm numerro-text-secondary mt-1">Access key system functions</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="/inventory" class="bg-white border numerro-border p-6 hover:border-blue-600 hover:shadow-sm transition-all group" style="border-radius:0">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-12 h-12 numerro-bg-blue flex items-center justify-center group-hover:opacity-80 transition-opacity" style="border-radius:0">
+                        <i class="fas fa-warehouse text-2xl numerro-blue"></i>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Manage Inventory</h3>
-                    <p class="text-gray-500">View and manage stock levels</p>
-                </div>
-            </div>
-        </a>
+                <h3 class="text-base font-semibold numerro-text-primary mb-1 group-hover:numerro-blue transition-colors">Inventory Management</h3>
+                <p class="text-sm numerro-text-secondary">View and update stock levels</p>
+            </a>
 
-        <a href="/simulate" class="block bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" style="border-radius:0">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-play-circle text-2xl text-yellow-500"></i>
+            <a href="/simulate" class="bg-white border numerro-border p-6 hover:border-purple-600 hover:shadow-sm transition-all group" style="border-radius:0">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-12 h-12 numerro-bg-purple flex items-center justify-center group-hover:opacity-80 transition-opacity" style="border-radius:0">
+                        <i class="fas fa-chart-line text-2xl numerro-purple"></i>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Run Simulation</h3>
-                    <p class="text-gray-500">Predict demand patterns</p>
-                </div>
-            </div>
-        </a>
+                <h3 class="text-base font-semibold numerro-text-primary mb-1 group-hover:numerro-purple transition-colors">Demand Simulation</h3>
+                <p class="text-sm numerro-text-secondary">Forecast future demand patterns</p>
+            </a>
 
-        <a href="/optimize" class="block bg-white shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow" style="border-radius:0">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-cogs text-2xl text-green-500"></i>
+            <a href="/optimize" class="bg-white border numerro-border p-6 hover:border-cyan-600 hover:shadow-sm transition-all group" style="border-radius:0">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-12 h-12 numerro-bg-cyan flex items-center justify-center group-hover:opacity-80 transition-opacity" style="border-radius:0">
+                        <i class="fas fa-cogs text-2xl numerro-cyan"></i>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Optimize Purchases</h3>
-                    <p class="text-gray-500">Calculate optimal orders</p>
-                </div>
-            </div>
-        </a>
+                <h3 class="text-base font-semibold numerro-text-primary mb-1 group-hover:numerro-cyan transition-colors">Purchase Optimization</h3>
+                <p class="text-sm numerro-text-secondary">Calculate optimal order quantities</p>
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

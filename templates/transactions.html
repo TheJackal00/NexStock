@@ -7,67 +7,67 @@
 {% block page_title %}Transaction History{% endblock %}
 
 {% block main %}
-<div class="space-y-6">
+<div class="numerro-bg p-3 md:p-8 space-y-4 md:space-y-6">
     <!-- Header with Actions -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-primary-900">📋 Transaction History</h1>
-            <p class="mt-2 text-sm text-primary-600">Manage and view all transaction records</p>
+            <h1 class="text-xl md:text-2xl font-bold numerro-text-primary">📋 Transaction History</h1>
+            <p class="mt-1 md:mt-2 text-xs md:text-sm numerro-text-secondary">Manage and view all transaction records</p>
         </div>
-        <div class="mt-4 sm:mt-0 flex space-x-3">
+        <div class="flex space-x-2 md:space-x-3">
             <button 
                 type="button" 
                 onclick="refreshTransactions()"
-                class="inline-flex items-center px-4 py-2 border border-primary-300 text-sm font-medium text-primary-700 bg-white hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" style="border-radius:0">
-                <i class="fas fa-sync-alt mr-2"></i>
-                Refresh
+                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 md:px-4 py-2.5 md:py-2 numerro-border text-xs md:text-sm font-medium numerro-text-primary bg-white hover:opacity-80 focus:outline-none transition-colors" style="border-radius:0;min-height:44px">
+                <i class="fas fa-sync-alt mr-1 md:mr-2"></i>
+                <span class="hidden sm:inline">Refresh</span>
             </button>
             <button 
                 type="button" 
                 onclick="exportTransactions()"
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium text-white bg-success-600 hover:bg-success-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success-500 transition-colors" style="border-radius:0">
-                <i class="fas fa-download mr-2"></i>
-                Export
+                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 md:px-4 py-2.5 md:py-2 border-0 shadow-sm text-xs md:text-sm font-medium text-white hover:opacity-90 focus:outline-none transition-colors" style="border-radius:0;background-color:#10B981;min-height:44px">
+                <i class="fas fa-download mr-1 md:mr-2"></i>
+                <span class="hidden sm:inline">Export</span>
             </button>
         </div>
     </div>
 
     <!-- Filters Panel -->
-    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Filters & Search</h3>
+    <div class="bg-white shadow-sm numerro-border" style="border-radius:0;border-width:1px">
+        <div class="px-4 md:px-6 py-3 md:py-4 numerro-border" style="border-bottom-width:1px">
+            <h3 class="text-base md:text-lg font-medium numerro-text-primary">Filters & Search</h3>
         </div>
-        <div class="p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="p-4 md:p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
                 <div>
-                    <label for="sku-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter by SKU</label>
+                    <label for="sku-filter" class="block text-sm font-medium numerro-text-primary mb-2">Filter by SKU</label>
                     <input 
                         type="text" 
-                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        class="w-full px-3 py-2 numerro-border shadow-sm focus:outline-none" style="border-radius:0;border-width:1px" 
                         id="sku-filter" 
                         placeholder="Enter SKU..." 
                         onkeyup="applyFilters()">
                 </div>
                 <div>
-                    <label for="date-from-filter" class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                    <label for="date-from-filter" class="block text-sm font-medium numerro-text-primary mb-2">From Date</label>
                     <input 
                         type="date" 
-                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        class="w-full px-3 py-2 numerro-border shadow-sm focus:outline-none" style="border-radius:0;border-width:1px" 
                         id="date-from-filter" 
                         onchange="applyFilters()">
                 </div>
                 <div>
-                    <label for="date-to-filter" class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                    <label for="date-to-filter" class="block text-sm font-medium numerro-text-primary mb-2">To Date</label>
                     <input 
                         type="date" 
-                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        class="w-full px-3 py-2 numerro-border shadow-sm focus:outline-none" style="border-radius:0;border-width:1px" 
                         id="date-to-filter" 
                         onchange="applyFilters()">
                 </div>
                 <div>
-                    <label for="doctype-filter" class="block text-sm font-medium text-gray-700 mb-2">Document Type</label>
+                    <label for="doctype-filter" class="block text-sm font-medium numerro-text-primary mb-2">Document Type</label>
                     <select 
-                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        class="w-full px-3 py-2 numerro-border shadow-sm focus:outline-none" style="border-radius:0;border-width:1px" 
                         id="doctype-filter" 
                         onchange="applyFilters()">
                         <option value="">All Documents</option>
@@ -79,9 +79,9 @@
                     </select>
                 </div>
                 <div>
-                    <label for="rows-per-page" class="block text-sm font-medium text-gray-700 mb-2">Rows per page</label>
+                    <label for="rows-per-page" class="block text-sm font-medium numerro-text-primary mb-2">Rows per page</label>
                     <select 
-                        class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" 
+                        class="w-full px-3 py-2 numerro-border shadow-sm focus:outline-none" style="border-radius:0;border-width:1px" 
                         id="rows-per-page" 
                         onchange="changePageSize()">
                         <option value="10" selected>10</option>
@@ -94,7 +94,7 @@
             </div>
             <div class="mt-4 flex justify-end">
                 <button 
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" style="border-radius:0" 
+                    class="inline-flex items-center px-4 py-2 numerro-border text-sm font-medium numerro-text-primary bg-white hover:opacity-80 focus:outline-none transition-colors" style="border-radius:0" 
                     onclick="clearFilters()">
                     <i class="fas fa-times mr-2"></i>
                     Clear Filters
@@ -104,88 +104,88 @@
     </div>
 
     <!-- Transaction Table -->
-    <div class="bg-white shadow-sm border border-gray-200 overflow-hidden" style="border-radius:0">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Transaction Records</h3>
+    <div class="bg-white shadow-sm numerro-border overflow-hidden" style="border-radius:0;border-width:1px">
+        <div class="px-4 md:px-6 py-3 md:py-4 numerro-border" style="border-bottom-width:1px">
+            <h3 class="text-base md:text-lg font-medium numerro-text-primary">Transaction Records</h3>
         </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200" id="transactions-table">
-                <thead class="bg-gray-50">
+        <div class="overflow-x-auto -mx-4 md:mx-0">
+            <table class="min-w-full divide-y numerro-border" style="border-width:1px" id="transactions-table">
+                <thead style="background-color:#F6F8FC">
                     <tr>
-                        <th onclick="sortTable(0)" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                        <th onclick="sortTable(0)" class="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider cursor-pointer hover:opacity-80 transition-colors">
                             <div class="flex items-center space-x-1">
                                 <span>Date</span>
-                                <i class="fas fa-sort text-gray-400" id="sort-0"></i>
+                                <i class="fas fa-sort numerro-text-secondary" id="sort-0"></i>
                             </div>
                         </th>
-                        <th onclick="sortTable(1)" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                        <th onclick="sortTable(1)" class="px-6 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider cursor-pointer hover:opacity-80 transition-colors">
                             <div class="flex items-center space-x-1">
                                 <span>Document Type</span>
-                                <i class="fas fa-sort text-gray-400" id="sort-1"></i>
+                                <i class="fas fa-sort numerro-text-secondary" id="sort-1"></i>
                             </div>
                         </th>
-                        <th onclick="sortTable(2)" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                        <th onclick="sortTable(2)" class="px-6 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider cursor-pointer hover:opacity-80 transition-colors">
                             <div class="flex items-center space-x-1">
                                 <span>Document Number</span>
-                                <i class="fas fa-sort text-gray-400" id="sort-2"></i>
+                                <i class="fas fa-sort numerro-text-secondary" id="sort-2"></i>
                             </div>
                         </th>
-                        <th onclick="sortTable(3)" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                        <th onclick="sortTable(3)" class="px-6 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider cursor-pointer hover:opacity-80 transition-colors">
                             <div class="flex items-center space-x-1">
                                 <span>SKU</span>
-                                <i class="fas fa-sort text-gray-400" id="sort-3"></i>
+                                <i class="fas fa-sort numerro-text-secondary" id="sort-3"></i>
                             </div>
                         </th>
-                        <th onclick="sortTable(4)" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                        <th onclick="sortTable(4)" class="px-6 py-3 text-right text-xs font-medium numerro-text-secondary uppercase tracking-wider cursor-pointer hover:opacity-80 transition-colors">
                             <div class="flex items-center justify-end space-x-1">
                                 <span>Volume</span>
-                                <i class="fas fa-sort text-gray-400" id="sort-4"></i>
+                                <i class="fas fa-sort numerro-text-secondary" id="sort-4"></i>
                             </div>
                         </th>
                     </tr>
                 </thead>
-                <tbody id="transactions-tbody" class="bg-white divide-y divide-gray-200">
+                <tbody id="transactions-tbody" class="bg-white divide-y numerro-border">
                     {% for trade in trades %}
-                    <tr data-sku="{{ trade.SKU }}" data-volume="{{ trade.VOLUME }}" class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <tr data-sku="{{ trade.SKU }}" data-volume="{{ trade.VOLUME }}" class="hover:opacity-90 transition-colors" style="background-color:#FFFFFF">
+                        <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm numerro-text-primary">
                             {{ trade.DATE or 'N/A' }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center space-x-2">
+                        <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-1 md:space-x-2">
                                 <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium" style="border-radius:0"
-                                    {% if trade.DOCUMENT_TYPE == 'Invoices' %}bg-blue-100 text-blue-800
-                                    {% elif trade.DOCUMENT_TYPE == 'Receipts' %}bg-green-100 text-green-800
-                                    {% elif trade.DOCUMENT_TYPE == 'Purchase Orders (PO)' %}bg-purple-100 text-purple-800
-                                    {% elif trade.DOCUMENT_TYPE == 'Credit Notes' %}bg-orange-100 text-orange-800
-                                    {% elif trade.DOCUMENT_TYPE == 'Debit Notes' %}bg-red-100 text-red-800
-                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {% if trade.DOCUMENT_TYPE == 'Invoices' %}style="background-color:rgba(78,124,255,0.1);color:#4E7CFF"
+                                    {% elif trade.DOCUMENT_TYPE == 'Receipts' %}style="background-color:rgba(16,185,129,0.1);color:#10B981"
+                                    {% elif trade.DOCUMENT_TYPE == 'Purchase Orders (PO)' %}style="background-color:rgba(112,51,255,0.1);color:#7033FF"
+                                    {% elif trade.DOCUMENT_TYPE == 'Credit Notes' %}style="background-color:rgba(220,118,83,0.1);color:#DC7653"
+                                    {% elif trade.DOCUMENT_TYPE == 'Debit Notes' %}style="background-color:rgba(246,81,100,0.1);color:#F65164"
+                                    {% else %}style="background-color:rgba(180,186,195,0.1);color:#717A90"{% endif %}">
                                     {{ trade.DOCUMENT_TYPE or 'N/A' }}
                                 </span>
                                 {% if trade.DOCUMENT_TYPE == 'Purchase Orders (PO)' %}
-                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600" style="border-radius:0" title="No inventory impact">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium numerro-text-secondary" style="border-radius:0;background-color:rgba(180,186,195,0.1)" title="No inventory impact">
                                         <i class="fas fa-file-alt"></i>
                                     </span>
                                 {% elif trade.DOCUMENT_TYPE in ['Receipts'] %}
-                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-600" style="border-radius:0" title="Increases inventory">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium" style="border-radius:0;background-color:rgba(16,185,129,0.1);color:#10B981" title="Increases inventory">
                                         <i class="fas fa-arrow-up"></i>
                                     </span>
                                 {% elif trade.DOCUMENT_TYPE in ['Invoices', 'Credit Notes', 'Debit Notes'] %}
-                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-600" style="border-radius:0" title="Decreases inventory">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium" style="border-radius:0;background-color:rgba(246,81,100,0.1);color:#F65164" title="Decreases inventory">
                                         <i class="fas fa-arrow-down"></i>
                                     </span>
                                 {% endif %}
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono numerro-text-primary">
                             {{ trade.DOC_NUMBER or 'N/A' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm font-semibold text-primary-900">{{ trade.SKU }}</span>
+                            <span class="text-sm font-semibold numerro-text-primary">{{ trade.SKU }}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <span class="inline-flex items-center px-2.5 py-0.5 text-sm font-medium" style="border-radius:0"
-                                {% if trade.VOLUME > 0 %}bg-success-100 text-success-800
-                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if trade.VOLUME > 0 %}style="background-color:rgba(16,185,129,0.1);color:#10B981"
+                                {% else %}style="background-color:rgba(246,81,100,0.1);color:#F65164"{% endif %}">
                                 {% if trade.VOLUME > 0 %}
                                     <i class="fas fa-plus mr-1"></i>{{ trade.VOLUME }}
                                 {% else %}
@@ -200,9 +200,9 @@
         </div>
 
         <!-- Pagination -->
-        <div class="bg-white px-6 py-3 border-t border-gray-200">
+        <div class="bg-white px-6 py-3 numerro-border" style="border-top-width:1px">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div class="text-sm text-gray-700" id="pagination-info">
+                <div class="text-sm numerro-text-secondary" id="pagination-info">
                     Showing 1 to 10 of {{ trades|length }} transactions
                 </div>
                 <nav class="mt-3 sm:mt-0" aria-label="Transaction pagination">

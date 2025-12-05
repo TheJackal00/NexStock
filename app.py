@@ -1452,10 +1452,12 @@ def optimization():
     try:
         print("DEBUG: /optimize POST reached (very top of handler)", flush=True)
         print("POST /optimize: Starting optimization process...", flush=True)
-        # Critical parameters for correct balance
-        shipping_cost = 100  # Fixed cost per shipment
-        holding_cost_rate = 0.01  # 1% of product value per day of storage
-        stockout_penalty_multiplier = 2.0  # Multiplier over margin to penalize stockouts
+        # Get parameters from form or use defaults
+        shipping_cost = float(request.form.get('shipping_cost', 100))  # Fixed cost per shipment
+        holding_cost_rate = float(request.form.get('holding_cost_rate', 1)) / 100  # Convert percentage to decimal
+        stockout_penalty_multiplier = float(request.form.get('stockout_penalty', 2.0))  # Multiplier over margin to penalize stockouts
+        
+        print(f"POST /optimize: Parameters - shipping_cost={shipping_cost}, holding_cost_rate={holding_cost_rate}, stockout_penalty={stockout_penalty_multiplier}", flush=True)
 
         # Get product info safely
         products = execute_query("SELECT SKU, NAME, MARGIN, COST FROM products")

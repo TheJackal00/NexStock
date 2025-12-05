@@ -1,0 +1,252 @@
+/* NexStock Professional Design System - Tailwind CSS Complementary Styles */
+/* FORCE ALL EDGES STRAIGHT - NO ROUNDED CORNERS ANYWHERE */
+* { border-radius: 0 !important; }
+*:after, *:before { border-radius: 0 !important; }
+[class*="rounded"], [style*="border-radius"], .rounded, .rounded-lg, .rounded-md, .rounded-sm, .rounded-full, .rounded-none {
+    border-radius: 0 !important;
+}
+
+/* Custom animations and transitions */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+/* Professional theme enhancements */
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Custom focus styles for accessibility */
+.professional-focus:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 0;
+}
+
+/* Enhanced table styles */
+.professional-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.professional-table th {
+    background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #475569;
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.professional-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    background: white;
+}
+
+.professional-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Professional button enhancements */
+.btn-professional {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 0;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-professional-primary {
+    background: linear-gradient(to bottom, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-professional-primary:hover {
+    background: linear-gradient(to bottom, #2563eb, #1d4ed8);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.btn-professional-secondary {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-professional-secondary:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* Professional card styles */
+.card-professional {
+    background: white;
+    border-radius: 0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid #f1f5f9;
+    overflow: hidden;
+    transition: all 0.2s ease-in-out;
+}
+
+.card-professional:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.card-professional-header {
+    background: linear-gradient(to right, #f8fafc, #f1f5f9);
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-professional-body {
+    padding: 20px;
+}
+
+/* Professional form styles */
+.form-professional {
+    margin-bottom: 24px;
+}
+
+.form-professional label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-professional input,
+.form-professional select,
+.form-professional textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 0;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+    background: white;
+}
+
+.form-professional input:focus,
+.form-professional select:focus,
+.form-professional textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Professional alert styles */
+.alert-professional {
+    padding: 16px;
+    border-radius: 0;
+    margin-bottom: 20px;
+    border-left: 4px solid;
+}
+
+.alert-professional-success {
+    background: #f0fdf4;
+    border-left-color: #22c55e;
+    color: #166534;
+}
+
+.alert-professional-warning {
+    background: #fffbeb;
+    border-left-color: #f59e0b;
+    color: #92400e;
+}
+
+.alert-professional-error {
+    background: #fef2f2;
+    border-left-color: #ef4444;
+    color: #991b1b;
+}
+
+.alert-professional-info {
+    background: #eff6ff;
+    border-left-color: #3b82f6;
+    color: #1e40af;
+}
+
+/* Professional loading spinner */
+.spinner-professional {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f1f5f9;
+    border-top: 2px solid #3b82f6;
+    border-radius: 0;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Utility classes for spacing */
+.spacing-professional {
+    margin-bottom: 24px;
+}
+
+.spacing-professional-large {
+    margin-bottom: 32px;
+}
+
+/* Professional typography */
+.text-professional-heading {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 16px;
+}
+
+.text-professional-subheading {
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 12px;
+}
+
+.text-professional-body {
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+    .card-professional {
+        margin-bottom: 16px;
+    }
+    
+    .card-professional-header,
+    .card-professional-body {
+        padding: 16px;
+    }
+    
+    .btn-professional {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}

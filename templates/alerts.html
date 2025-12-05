@@ -7,92 +7,88 @@
 {% block page_title %}Alerts & Notifications{% endblock %}
 
 {% block main %}
-<div class="space-y-6">
+<div class="numerro-bg p-3 md:p-8 space-y-4 md:space-y-6" style="min-height:100vh">
     <!-- Header with Actions -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-4 md:mb-8">
         <div>
-            <h1 class="text-2xl font-bold text-primary-900">🔔 Alerts & Notifications</h1>
-            <p class="mt-2 text-sm text-primary-600">Monitor critical inventory alerts and notifications</p>
+            <h1 class="text-xl md:text-2xl font-semibold numerro-text-primary mb-1">Alerts & Notifications</h1>
+            <p class="text-xs md:text-sm numerro-text-secondary">Monitor critical inventory alerts and notifications</p>
         </div>
-        <div class="mt-4 sm:mt-0 flex space-x-3">
+        <div class="flex space-x-2 md:space-x-3">
             <button 
                 type="button" 
                 onclick="refreshAlerts()"
-                class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" style="border-radius:0">
-                <i class="fas fa-sync-alt mr-2"></i>
-                Refresh
+                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 md:px-4 py-2.5 md:py-2 border numerro-border text-xs md:text-sm font-medium numerro-text-primary bg-white hover:opacity-80 transition-opacity" style="border-radius:0;min-height:44px">
+                <i class="fas fa-sync-alt mr-1 md:mr-2"></i>
+                <span class="hidden sm:inline">Refresh</span>
             </button>
             <button 
                 type="button" 
                 onclick="configureAlerts()"
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" style="border-radius:0">
-                <i class="fas fa-cog mr-2"></i>
-                Configure
+                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-3 md:px-4 py-2.5 md:py-2 border border-transparent text-xs md:text-sm font-medium text-white numerro-blue-bg hover:opacity-90 transition-opacity" style="border-radius:0;background-color:#4E7CFF;min-height:44px">
+                <i class="fas fa-cog mr-1 md:mr-2"></i>
+                <span class="hidden sm:inline">Configure</span>
             </button>
         </div>
     </div>
 
     <!-- Alert Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" id="alert-summary">
-        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Critical Alerts</div>
-                    <div class="text-3xl font-bold text-gray-900" id="critical-count">0</div>
-                </div>
-                <div class="w-12 h-12 bg-red-600 flex items-center justify-center" style="border-radius:0">
-                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+    <div class="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-6" id="alert-summary">
+        <div class="bg-white border numerro-border p-3 md:p-6" style="border-radius:0">
+            <div class="flex flex-col md:flex-row items-start md:items-center md:justify-between mb-3 md:mb-4 space-y-2 md:space-y-0">
+                <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Critical</div>
+                <div class="w-8 h-8 md:w-10 md:h-10 numerro-bg-red flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-exclamation-triangle numerro-red text-lg"></i>
                 </div>
             </div>
+            <div class="text-3xl font-semibold numerro-red mb-1" id="critical-count">0</div>
+            <div class="text-xs numerro-text-secondary">Immediate action required</div>
         </div>
 
-        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Warning Alerts</div>
-                    <div class="text-3xl font-bold text-gray-900" id="warning-count">0</div>
-                </div>
-                <div class="w-12 h-12 bg-orange-600 flex items-center justify-center" style="border-radius:0">
-                    <i class="fas fa-exclamation-circle text-white text-xl"></i>
+        <div class="bg-white border numerro-border p-6" style="border-radius:0">
+            <div class="flex items-center justify-between mb-4">
+                <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Warning Alerts</div>
+                <div class="w-10 h-10 numerro-bg-orange flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-exclamation-circle numerro-orange text-lg"></i>
                 </div>
             </div>
+            <div class="text-3xl font-semibold numerro-orange mb-1" id="warning-count">0</div>
+            <div class="text-xs numerro-text-secondary">Needs attention soon</div>
         </div>
 
-        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Info Alerts</div>
-                    <div class="text-3xl font-bold text-gray-900" id="info-count">0</div>
-                </div>
-                <div class="w-12 h-12 bg-blue-600 flex items-center justify-center" style="border-radius:0">
-                    <i class="fas fa-info-circle text-white text-xl"></i>
+        <div class="bg-white border numerro-border p-6" style="border-radius:0">
+            <div class="flex items-center justify-between mb-4">
+                <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Info Alerts</div>
+                <div class="w-10 h-10 numerro-bg-blue flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-info-circle numerro-blue text-lg"></i>
                 </div>
             </div>
+            <div class="text-3xl font-semibold numerro-blue mb-1" id="info-count">0</div>
+            <div class="text-xs numerro-text-secondary">Informational items</div>
         </div>
 
-        <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
-            <div class="flex items-center justify-between">
-                <div>
-                    <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Total Alerts</div>
-                    <div class="text-3xl font-bold text-gray-900" id="total-count">0</div>
-                </div>
-                <div class="w-12 h-12 bg-slate-600 flex items-center justify-center" style="border-radius:0">
-                    <i class="fas fa-bell text-white text-xl"></i>
+        <div class="bg-white border numerro-border p-6" style="border-radius:0">
+            <div class="flex items-center justify-between mb-4">
+                <div class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Total Alerts</div>
+                <div class="w-10 h-10 bg-slate-100 flex items-center justify-center" style="border-radius:0">
+                    <i class="fas fa-bell numerro-text-secondary text-lg"></i>
                 </div>
             </div>
+            <div class="text-3xl font-semibold numerro-text-primary mb-1" id="total-count">0</div>
+            <div class="text-xs numerro-text-secondary">All active alerts</div>
         </div>
     </div>
 
     <!-- Alert Filters -->
-    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Filters</h3>
+    <div class="bg-white border numerro-border" style="border-radius:0">
+        <div class="px-6 py-4 border-b numerro-border">
+            <h3 class="text-lg font-semibold numerro-text-primary">Filters</h3>
         </div>
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <label for="alert-type-filter" class="block text-sm font-medium text-gray-700 mb-2">Alert Type</label>
-                    <select class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" id="alert-type-filter" onchange="filterAlerts()">
+                    <label for="alert-type-filter" class="block text-sm font-medium numerro-text-secondary mb-2">Alert Type</label>
+                    <select class="w-full px-3 py-2 border numerro-border focus:outline-none focus:ring-1 focus:ring-blue-500" style="border-radius:0" id="alert-type-filter" onchange="filterAlerts()">
                         <option value="">All Types</option>
                         <option value="low_stock">Low Stock</option>
                         <option value="stock_breaks">Stock Breaks</option>
@@ -100,8 +96,8 @@
                     </select>
                 </div>
                 <div>
-                    <label for="severity-filter" class="block text-sm font-medium text-gray-700 mb-2">Severity Level</label>
-                    <select class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" id="severity-filter" onchange="filterAlerts()">
+                    <label for="severity-filter" class="block text-sm font-medium numerro-text-secondary mb-2">Severity Level</label>
+                    <select class="w-full px-3 py-2 border numerro-border focus:outline-none focus:ring-1 focus:ring-blue-500" style="border-radius:0" id="severity-filter" onchange="filterAlerts()">
                         <option value="">All Severities</option>
                         <option value="critical">Critical</option>
                         <option value="warning">Warning</option>
@@ -109,11 +105,11 @@
                     </select>
                 </div>
                 <div>
-                    <label for="sku-filter" class="block text-sm font-medium text-gray-700 mb-2">Product SKU</label>
-                    <input type="text" class="w-full px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" style="border-radius:0" id="sku-filter" placeholder="Enter SKU..." onkeyup="filterAlerts()">
+                    <label for="sku-filter" class="block text-sm font-medium numerro-text-secondary mb-2">Product SKU</label>
+                    <input type="text" class="w-full px-3 py-2 border numerro-border focus:outline-none focus:ring-1 focus:ring-blue-500" style="border-radius:0" id="sku-filter" placeholder="Enter SKU..." onkeyup="filterAlerts()">
                 </div>
                 <div class="flex items-end">
-                    <button class="w-full px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" style="border-radius:0" onclick="clearFilters()">
+                    <button class="w-full px-4 py-2 border numerro-border text-sm font-medium numerro-text-primary bg-white hover:opacity-80 transition-opacity" style="border-radius:0" onclick="clearFilters()">
                         <i class="fas fa-times mr-2"></i>Clear Filters
                     </button>
                 </div>
@@ -122,11 +118,11 @@
     </div>
 
     <!-- Alerts List -->
-    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-        <div class="px-6 py-4 border-b border-gray-200">
+    <div class="bg-white border numerro-border" style="border-radius:0">
+        <div class="px-6 py-4 border-b numerro-border">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-medium text-gray-900">Active Alerts</h3>
-                <div class="text-sm text-gray-500">
+                <h3 class="text-lg font-semibold numerro-text-primary">Active Alerts</h3>
+                <div class="text-sm numerro-text-secondary">
                     Last updated: <span id="last-updated">--</span>
                 </div>
             </div>
@@ -134,11 +130,11 @@
         <div class="p-6">
             <div id="alerts-container">
                 <div class="text-center py-12">
-                    <div class="w-16 h-16 bg-gray-100 flex items-center justify-center mx-auto mb-4" style="border-radius:0">
-                        <div class="w-8 h-8 border-4 border-gray-300 border-t-primary-600 animate-spin" style="border-radius:50%"></div>
+                    <div class="w-16 h-16 bg-slate-100 flex items-center justify-center mx-auto mb-4" style="border-radius:0">
+                        <div class="w-8 h-8 border-4 border-slate-300 border-t-blue-600 animate-spin" style="border-radius:50%;border-top-color:#4E7CFF"></div>
                     </div>
-                    <p class="text-gray-700 font-medium">Loading alerts...</p>
-                    <p class="text-gray-500 text-sm mt-1">Analyzing inventory data</p>
+                    <p class="numerro-text-primary font-medium">Loading alerts...</p>
+                    <p class="numerro-text-secondary text-sm mt-1">Analyzing inventory data</p>
                 </div>
             </div>
         </div>

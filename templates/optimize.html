@@ -14,86 +14,120 @@
         border-radius: 0 !important;
     }
 </style>
-<div class="min-h-screen bg-slate-50">
+<div class="min-h-screen numerro-bg">
     <!-- Power BI Style Header -->
-    <div class="bg-white border-b border-slate-200 px-6 py-4">
+    <div class="bg-white numerro-border px-6 py-4" style="border-bottom-width:1px">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="h-7 w-7 bg-blue-600 flex items-center justify-center" style="border-radius:0">
+                <div class="h-7 w-7 flex items-center justify-center" style="border-radius:0;background-color:#4E7CFF">
                     <i class="fas fa-cogs text-white text-xs"></i>
                 </div>
                 <div>
-                    <h1 class="text-base font-semibold text-slate-900">Purchase Optimization</h1>
-                    <p class="text-xs text-slate-500">Integer Linear Programming • Cost Minimization</p>
+                    <h1 class="text-base font-semibold numerro-text-primary">Purchase Optimization</h1>
+                    <p class="text-xs numerro-text-secondary">Integer Linear Programming • Cost Minimization</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <form method="post" class="inline relative">
-                    <button 
-                        type="submit"
-                        class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors" style="border-radius:0">
-                        <i class="fas fa-play mr-2 text-xs"></i>
-                        Run Optimization
-                        <span id="loading-spinner" class="ml-2 hidden">
-                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-                            </svg>
-                        </span>
-                    </button>
-                </form>
+                <button 
+                    type="submit"
+                    form="optimization-form"
+                    class="inline-flex items-center px-6 py-3 border-0 text-sm font-medium text-white hover:opacity-90 focus:outline-none transition-colors" style="border-radius:0;background-color:#4E7CFF">
+                    <i class="fas fa-play mr-2 text-xs"></i>
+                    Run Optimization
+                    <span id="loading-spinner" class="ml-2 hidden">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                    </span>
+                </button>
             </div>
         </div>
     </div>
 
     <div class="px-6 py-4 space-y-4">
 
-        <!-- Optimization Parameters Info Card -->
-        <div class="bg-blue-50 border border-blue-200 shadow-sm" style="border-radius:0">
-            <div class="px-4 py-3 border-b border-blue-300 bg-blue-100">
-                <h3 class="text-sm font-semibold text-blue-900 flex items-center">
-                    <i class="fas fa-sliders-h mr-2"></i>
-                    Default Optimization Parameters
+        <!-- Optimization Parameters Card -->
+        <div class="bg-white numerro-border shadow-sm" style="border-radius:0;border-width:1px;border-left-width:4px;border-left-color:#4E7CFF">
+            <div class="px-4 py-3 numerro-border" style="border-bottom-width:1px;background-color:#F6F8FC">
+                <h3 class="text-sm font-semibold numerro-text-primary flex items-center">
+                    <i class="fas fa-sliders-h mr-2" style="color:#4E7CFF"></i>
+                    Optimization Parameters
                 </h3>
             </div>
-            <div class="p-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white border border-blue-200 p-3">
-                        <div class="flex items-start">
-                            <i class="fas fa-truck text-blue-600 mt-1 mr-2"></i>
-                            <div>
-                                <div class="text-xs text-slate-600 mb-1">Shipping Cost</div>
-                                <div class="text-lg font-bold text-slate-800">$100</div>
-                                <div class="text-xs text-slate-500">Fixed cost per order</div>
+            <div class="p-4 md:p-6">
+                <form method="post" id="optimization-form">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4">
+                        <div class="bg-white numerro-border p-3 md:p-4" style="border-width:1px">
+                            <div class="flex items-start space-x-2">
+                                <i class="fas fa-truck mt-1 text-sm md:text-base" style="color:#4E7CFF"></i>
+                                <div class="flex-1">
+                                    <label for="shipping_cost" class="text-xs numerro-text-secondary mb-1 block">Shipping Cost</label>
+                                    <div class="flex items-center">
+                                        <span class="numerro-text-secondary mr-1">$</span>
+                                        <input type="number" 
+                                               id="shipping_cost" 
+                                               name="shipping_cost" 
+                                               value="100" 
+                                               min="0" 
+                                               step="10"
+                                               class="w-24 px-2 py-1 numerro-border text-sm focus:outline-none" 
+                                               style="border-radius:0;border-width:1px">
+                                    </div>
+                                    <div class="text-xs numerro-text-secondary mt-1">Fixed cost per order</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white numerro-border p-3" style="border-width:1px">
+                            <div class="flex items-start">
+                                <i class="fas fa-warehouse mt-1 mr-2" style="color:#10B981"></i>
+                                <div class="flex-1">
+                                    <label for="holding_cost_rate" class="text-xs numerro-text-secondary mb-1 block">Holding Cost Rate</label>
+                                    <div class="flex items-center">
+                                        <input type="number" 
+                                               id="holding_cost_rate" 
+                                               name="holding_cost_rate" 
+                                               value="1" 
+                                               min="0" 
+                                               max="100"
+                                               step="0.1"
+                                               class="w-20 px-2 py-1 numerro-border text-sm focus:outline-none" 
+                                               style="border-radius:0;border-width:1px">
+                                        <span class="numerro-text-secondary ml-1">&nbsp;%</span>
+                                    </div>
+                                    <div class="text-xs numerro-text-secondary mt-1">Per day of product value</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white numerro-border p-3" style="border-width:1px">
+                            <div class="flex items-start">
+                                <i class="fas fa-exclamation-triangle mt-1 mr-2" style="color:#F65164"></i>
+                                <div class="flex-1">
+                                    <label for="stockout_penalty" class="text-xs numerro-text-secondary mb-1 block">Stockout Penalty</label>
+                                    <div class="flex items-center">
+                                        <input type="number" 
+                                               id="stockout_penalty" 
+                                               name="stockout_penalty" 
+                                               value="2.0" 
+                                               min="0" 
+                                               max="10"
+                                               step="0.1"
+                                               class="w-20 px-2 py-1 numerro-border text-sm focus:outline-none" 
+                                               style="border-radius:0;border-width:1px" 
+                                               style="border-radius:0">
+                                        <span class="text-slate-600 ml-1">&nbsp;x</span>
+                                    </div>
+                                    <div class="text-xs text-slate-500 mt-1">Multiplier over margin</div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white border border-blue-200 p-3">
-                        <div class="flex items-start">
-                            <i class="fas fa-warehouse text-green-600 mt-1 mr-2"></i>
-                            <div>
-                                <div class="text-xs text-slate-600 mb-1">Holding Cost Rate</div>
-                                <div class="text-lg font-bold text-slate-800">1%</div>
-                                <div class="text-xs text-slate-500">Per day of product value</div>
-                            </div>
-                        </div>
+                    <div class="mt-3 text-xs text-slate-600 bg-white border border-blue-200 p-3">
+                        <i class="fas fa-info-circle text-blue-600 mr-1"></i>
+                        <strong>Note:</strong> These parameters are used by the Integer Linear Programming (ILP) solver to minimize total costs while maintaining service levels. 
+                        Product-specific values (cost, margin, expiration) are loaded from the products table.
                     </div>
-                    <div class="bg-white border border-blue-200 p-3">
-                        <div class="flex items-start">
-                            <i class="fas fa-exclamation-triangle text-red-600 mt-1 mr-2"></i>
-                            <div>
-                                <div class="text-xs text-slate-600 mb-1">Stockout Penalty</div>
-                                <div class="text-lg font-bold text-slate-800">2.0x</div>
-                                <div class="text-xs text-slate-500">Multiplier over margin</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-3 text-xs text-slate-600 bg-white border border-blue-200 p-3">
-                    <i class="fas fa-info-circle text-blue-600 mr-1"></i>
-                    <strong>Note:</strong> These parameters are used by the Integer Linear Programming (ILP) solver to minimize total costs while maintaining service levels. 
-                    Product-specific values (cost, margin, expiration) are loaded from the products table.
-                </div>
+                </form>
             </div>
         </div>
 
@@ -353,14 +387,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Form submission handler to show the spinner
-    const form = document.querySelector('form');
+    const form = document.getElementById('optimization-form');
     const spinner = safeGetElement('loading-spinner');
     
     if (form && spinner) {
         form.addEventListener('submit', function() {
             spinner.classList.remove('hidden');
             // Disable the button
-            const button = form.querySelector('button[type="submit"]');
+            const button = document.querySelector('button[form="optimization-form"]');
             if (button) {
                 button.disabled = true;
                 button.classList.add('opacity-50', 'cursor-not-allowed');
