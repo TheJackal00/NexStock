@@ -1,0 +1,188 @@
+{% extends "layout.html" %}
+
+{% block title %}Stagnated Items - NexStock{% endblock %}
+
+{% block page_title %}Stagnated Items{% endblock %}
+{% block page_description %}Items with lower-than-expected recent demand{% endblock %}
+
+{% block main %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Stagnated Items</h2>
+        <div class="flex items-center space-x-3">
+            <input id="filter-sku" placeholder="Filter SKU" class="px-2 py-1 border rounded" />
+            <input id="filter-name" placeholder="Filter Product Name" class="px-2 py-1 border rounded" />
+            <select id="filter-severity" class="px-2 py-1 border rounded">
+                <option value="">All severities</option>
+                <option value="critical">Critical</option>
+                <option value="warning">Warning</option>
+                <option value="info">Info</option>
+            </select>
+            <select id="sort-by" class="px-2 py-1 border rounded">
+                <option value="ratio">Ratio (recent/expected)</option>
+                <option value="timestamp">Timestamp</option>
+            </select>
+            <select id="sort-dir" class="px-2 py-1 border rounded">
+                <option value="asc">Asc</option>
+                <option value="desc">Desc</option>
+            </select>
+            <a id="export-csv" class="inline-block px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Export CSV</a>
+        </div>
+    </div>
+
+    <div id="table-container">
+        <table class="w-full table-auto">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="p-2 text-left">SKU</th>
+                    <th class="p-2 text-left">Ratio</th>
+                    <th class="p-2 text-left">Recent / Expected</th>
+                    <th class="p-2 text-left">Last Sale</th>
+                </tr>
+            </thead>
+            <tbody id="alerts-rows"></tbody>
+        </table>
+    </div>
+
+    <div class="mt-4 flex justify-between items-center">
+        <div id="pagination-info" class="text-sm text-gray-600"></div>
+        <div>
+            <button id="prev-page" class="px-3 py-1 bg-gray-200 rounded mr-2">Prev</button>
+            <button id="next-page" class="px-3 py-1 bg-gray-200 rounded">Next</button>
+        </div>
+    </div>
+</div>
+<div class="p-8">
+    <h2 class="text-2xl font-bold mb-4">Stagnated Item Alert Details</h2>
+    <p class="mb-4">SKU: <span class="font-mono bg-slate-100 px-2 py-1 rounded">{{ sku }}</span></p>
+    <div id="stagnated-details"></div>
+    <a href="/alerts" class="inline-block mt-6 px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-800">Back to Alerts</a>
+</div>
+<script>
+fetch(`/api/alerts/stagnated?sku={{ sku }}`)
+    .then(r => r.json())
+    .then(data => {
+        if (data.items && data.items.length > 0) {
+            const item = data.items[0];
+            document.getElementById('stagnated-details').innerHTML = `
+                <div class='bg-white border rounded p-4'>
+                    <div><b>Product:</b> ${item.product_name || ''}</div>
+                    <div><b>Recent Sales:</b> ${item.details?.recent_sales ?? ''}</div>
+                    <div><b>Baseline Sales:</b> ${item.details?.baseline_sales ?? ''}</div>
+                    <div><b>Ratio:</b> ${item.details?.ratio ?? ''}</div>
+                    <div><b>Severity:</b> ${item.severity}</div>
+                    <div><b>Timestamp:</b> ${item.timestamp}</div>
+                </div>
+            `;
+        } else {
+            document.getElementById('stagnated-details').innerHTML = '<div class="text-slate-500">No details found for this SKU.</div>';
+        }
+    });
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const limit = 50;
+let offset = 0;
+const recent_days = 30;
+const baseline_days = 90;
+
+// Debounce helper that shows an input-level spinner while waiting
+function debounceWithIndicator(fn, wait, indicatorId){
+    let t = null;
+    return function(...args){
+        try{ document.getElementById(indicatorId).classList.remove('hidden'); }catch(e){}
+        clearTimeout(t);
+        t = setTimeout(async ()=>{
+            try{ await fn.apply(this, args); }finally{ try{ document.getElementById(indicatorId).classList.add('hidden'); }catch(e){} }
+        }, wait);
+    };
+}
+
+function setLoadingST(isLoading){
+    const spinner = document.getElementById('loading-spinner');
+    const prev = document.getElementById('prev-page');
+    const next = document.getElementById('next-page');
+    if(isLoading){
+        spinner.classList.remove('hidden');
+        prev.disabled = true;
+        next.disabled = true;
+    } else {
+        spinner.classList.add('hidden');
+    }
+}
+
+async function loadPage(){
+    setLoadingST(true);
+    try{
+        const sku = document.getElementById('filter-sku').value;
+        const name = document.getElementById('filter-name').value;
+        const severity = document.getElementById('filter-severity').value;
+        const sort_by = document.getElementById('sort-by').value;
+        const sort_dir = document.getElementById('sort-dir').value;
+        const res = await fetch(`/api/alerts/stagnated?recent_days=${recent_days}&baseline_days=${baseline_days}&limit=${limit}&offset=${offset}&sku=${encodeURIComponent(sku)}&name=${encodeURIComponent(name)}&severity=${encodeURIComponent(severity)}&sort_by=${encodeURIComponent(sort_by)}&sort_dir=${encodeURIComponent(sort_dir)}`);
+        const data = await res.json();
+        const tbody = document.getElementById('alerts-rows');
+        tbody.innerHTML = '';
+        (data.items || []).forEach(a => {
+            const d = a.details || {};
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td class="p-2">${a.sku || ''}</td>
+                            <td class="p-2">${d.ratio || ''}</td>
+                            <td class="p-2">${d.recent_demand || ''} / ${d.expected_recent || ''}</td>
+                            <td class="p-2">${d.last_sale_date || ''}</td>`;
+            tbody.appendChild(tr);
+        });
+        const info = document.getElementById('pagination-info');
+        const total = data.count || 0;
+        info.textContent = `Showing ${Math.min(limit, Math.max(0, total - offset))} of ${total}`;
+
+        const prev = document.getElementById('prev-page');
+        const next = document.getElementById('next-page');
+        prev.disabled = offset <= 0;
+        next.disabled = (offset + limit) >= total;
+    }catch(err){
+        console.error('Load error', err);
+    }finally{
+        setLoadingST(false);
+    }
+}
+
+
+const debouncedLoadST = debounceWithIndicator(()=>{ offset = 0; loadPage(); }, 300, 'input-spinner-name');
+
+// SKU-specific spinner
+const debouncedLoadST_SKU = debounceWithIndicator(()=>{ offset = 0; loadPage(); }, 300, 'input-spinner-sku');
+
+document.getElementById('prev-page').addEventListener('click', ()=>{ if(offset - limit >= 0){ offset -= limit; loadPage(); }});
+document.getElementById('next-page').addEventListener('click', ()=>{ offset += limit; loadPage(); });
+document.getElementById('export-csv').addEventListener('click', ()=>{ 
+    const sku = document.getElementById('filter-sku').value;
+    const name = document.getElementById('filter-name').value;
+    const severity = document.getElementById('filter-severity').value;
+    const sort_by = document.getElementById('sort-by').value;
+    const sort_dir = document.getElementById('sort-dir').value;
+    window.location = `/api/alerts/stagnated?export=csv&recent_days=${recent_days}&baseline_days=${baseline_days}&limit=10000&sku=${encodeURIComponent(sku)}&name=${encodeURIComponent(name)}&severity=${encodeURIComponent(severity)}&sort_by=${encodeURIComponent(sort_by)}&sort_dir=${encodeURIComponent(sort_dir)}`;
+});
+
+['filter-name','filter-severity','sort-by','sort-dir'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('change', debouncedLoadST);
+    el.addEventListener('keyup', debouncedLoadST);
+});
+
+const skuElST = document.getElementById('filter-sku');
+skuElST.addEventListener('change', debouncedLoadST_SKU);
+skuElST.addEventListener('keyup', debouncedLoadST_SKU);
+
+// Spinner element
+const spinnerST = document.createElement('div');
+spinnerST.id = 'loading-spinner';
+spinnerST.className = 'hidden mt-2 text-sm text-gray-600';
+spinnerST.textContent = 'Loading...';
+document.querySelector('#table-container').parentNode.insertBefore(spinnerST, document.querySelector('#table-container'));
+
+document.addEventListener('DOMContentLoaded', loadPage);
+</script>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends "layout.html" %}
+
+{% block title %}Low Stock Alerts - NexStock{% endblock %}
+
+{% block page_title %}Low Stock Alerts{% endblock %}
+{% block page_description %}Items nearing depletion{% endblock %}
+
+{% block main %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Low Stock Items</h2>
+        <div class="flex items-center space-x-3">
+                        <div class="flex items-center space-x-2">
+                                <input id="filter-sku" placeholder="Filter SKU" class="px-2 py-1 border rounded" />
+                                <span id="input-spinner-sku" class="hidden w-4 h-4">
+                                        <svg class="animate-spin w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                        </svg>
+                                </span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                                <input id="filter-name" placeholder="Filter Product Name" class="px-2 py-1 border rounded" />
+                                <span id="input-spinner-name" class="hidden w-4 h-4">
+                                        <svg class="animate-spin w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                        </svg>
+                                </span>
+                        </div>
+            <select id="filter-severity" class="px-2 py-1 border rounded">
+                <option value="">All severities</option>
+                <option value="critical">Critical</option>
+                <option value="warning">Warning</option>
+                <option value="info">Info</option>
+            </select>
+            <select id="sort-by" class="px-2 py-1 border rounded">
+                <option value="days_of_supply">Days of supply</option>
+                <option value="severity">Severity</option>
+                <option value="timestamp">Timestamp</option>
+            </select>
+            <select id="sort-dir" class="px-2 py-1 border rounded">
+                <option value="asc">Asc</option>
+                <option value="desc">Desc</option>
+            </select>
+            <a id="export-csv" class="inline-block px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Export CSV</a>
+        </div>
+    </div>
+
+    <div id="table-container">
+        <table class="w-full table-auto">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="p-2 text-left">SKU</th>
+                    <th class="p-2 text-left">Severity</th>
+                    <th class="p-2 text-left">Message</th>
+                    <th class="p-2 text-left">Details</th>
+                    <th class="p-2 text-left">Timestamp</th>
+                </tr>
+            </thead>
+            <tbody id="alerts-rows"></tbody>
+        </table>
+    </div>
+
+    <div class="mt-4 flex justify-between items-center">
+        <div id="pagination-info" class="text-sm text-gray-600"></div>
+        <div>
+            <button id="prev-page" class="px-3 py-1 bg-gray-200 rounded mr-2">Prev</button>
+            <button id="next-page" class="px-3 py-1 bg-gray-200 rounded">Next</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const limit = 50;
+let offset = 0;
+
+// Debounce helper
+// Debounce helper that shows an input-level spinner while waiting
+function debounceWithIndicator(fn, wait, indicatorId){
+    let t = null;
+    return function(...args){
+        // show indicator
+        try{ document.getElementById(indicatorId).classList.remove('hidden'); }catch(e){}
+        clearTimeout(t);
+        t = setTimeout(async ()=>{
+            try{
+                await fn.apply(this, args);
+            }finally{
+                try{ document.getElementById(indicatorId).classList.add('hidden'); }catch(e){}
+            }
+        }, wait);
+    };
+}
+
+function setLoading(isLoading){
+    const spinner = document.getElementById('loading-spinner');
+    const prev = document.getElementById('prev-page');
+    const next = document.getElementById('next-page');
+    if(isLoading){
+        spinner.classList.remove('hidden');
+        prev.disabled = true;
+        next.disabled = true;
+    } else {
+        spinner.classList.add('hidden');
+        // enable/disable based on pagination state set after load
+    }
+}
+
+async function loadPage(){
+    setLoading(true);
+    try{
+        const sku = document.getElementById('filter-sku').value;
+        const name = document.getElementById('filter-name').value;
+        const severity = document.getElementById('filter-severity').value;
+        const sort_by = document.getElementById('sort-by').value;
+        const sort_dir = document.getElementById('sort-dir').value;
+        const res = await fetch(`/api/alerts/low_stock?limit=${limit}&offset=${offset}&sku=${encodeURIComponent(sku)}&name=${encodeURIComponent(name)}&severity=${encodeURIComponent(severity)}&sort_by=${encodeURIComponent(sort_by)}&sort_dir=${encodeURIComponent(sort_dir)}`);
+        const data = await res.json();
+        const tbody = document.getElementById('alerts-rows');
+        tbody.innerHTML = '';
+        (data.items || []).forEach(a => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td class="p-2">${a.sku || ''}</td>
+                            <td class="p-2">${a.severity || ''}</td>
+                            <td class="p-2">${a.message || ''}</td>
+                            <td class="p-2"><pre class="whitespace-pre-wrap text-sm">${JSON.stringify(a.details || {}, null, 0)}</pre></td>
+                            <td class="p-2">${a.timestamp || ''}</td>`;
+            tbody.appendChild(tr);
+        });
+        const info = document.getElementById('pagination-info');
+        const total = data.count || 0;
+        info.textContent = `Showing ${Math.min(limit, Math.max(0, total - offset))} of ${total}`;
+
+        // Enable/disable pagination buttons
+        const prev = document.getElementById('prev-page');
+        const next = document.getElementById('next-page');
+        prev.disabled = offset <= 0;
+        next.disabled = (offset + limit) >= total;
+    }catch(err){
+        console.error('Load error', err);
+    }finally{
+        setLoading(false);
+    }
+}
+
+const debouncedLoad = debounceWithIndicator(()=>{ offset = 0; loadPage(); }, 300, 'input-spinner-name');
+
+// separate spinner for SKU input too; when SKU or name changes we show respective spinner
+const debouncedLoadSKU = debounceWithIndicator(()=>{ offset = 0; loadPage(); }, 300, 'input-spinner-sku');
+
+document.getElementById('prev-page').addEventListener('click', ()=>{ if(offset - limit >= 0){ offset -= limit; loadPage(); }});
+document.getElementById('next-page').addEventListener('click', ()=>{ offset += limit; loadPage(); });
+document.getElementById('export-csv').addEventListener('click', ()=>{
+    const sku = document.getElementById('filter-sku').value;
+    const name = document.getElementById('filter-name').value;
+    const severity = document.getElementById('filter-severity').value;
+    const sort_by = document.getElementById('sort-by').value;
+    const sort_dir = document.getElementById('sort-dir').value;
+    window.location = `/api/alerts/low_stock?export=csv&limit=10000&sku=${encodeURIComponent(sku)}&name=${encodeURIComponent(name)}&severity=${encodeURIComponent(severity)}&sort_by=${encodeURIComponent(sort_by)}&sort_dir=${encodeURIComponent(sort_dir)}`;
+});
+
+['filter-name','filter-severity','sort-by','sort-dir'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('change', debouncedLoad);
+    el.addEventListener('keyup', debouncedLoad);
+});
+
+const skuEl = document.getElementById('filter-sku');
+skuEl.addEventListener('change', debouncedLoadSKU);
+skuEl.addEventListener('keyup', debouncedLoadSKU);
+
+// Spinner element
+const spinnerContainer = document.createElement('div');
+spinnerContainer.id = 'loading-spinner';
+spinnerContainer.className = 'hidden mt-2 text-sm text-gray-600';
+spinnerContainer.textContent = 'Loading...';
+document.querySelector('#table-container').parentNode.insertBefore(spinnerContainer, document.querySelector('#table-container'));
+
+document.addEventListener('DOMContentLoaded', loadPage);
+</script>
+{% endblock %}
