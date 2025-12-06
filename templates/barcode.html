@@ -23,6 +23,13 @@
                 <h6 class="text-sm font-medium numerro-text-primary">Scanner</h6>
             </div>
             <div class="p-6">
+                <!-- Camera Button (Always Visible) -->
+                <div class="mb-4 text-center">
+                    <button type="button" class="w-full text-white font-medium px-6 py-3 shadow-sm transition-colors text-base" style="background:#4E7CFF; border-radius:0; border:none;" onclick="toggleCamera()" id="camera-btn" onmouseover="this.style.background='#3D63CC'" onmouseout="this.style.background='#4E7CFF'">
+                        <i class="fas fa-camera mr-2"></i><span class="text-white">Start Scanning</span>
+                    </button>
+                </div>
+                
                 <!-- Camera View -->
                 <div id="camera-container" class="mb-4" style="display: none;">
                     <video id="video" class="w-full numerro-border" style="max-height: 400px; border-width:2px; border-style:dashed;"></video>
@@ -31,12 +38,6 @@
                 
                 <!-- Manual Input -->
                 <div id="manual-input">
-                    <!-- Camera Button -->
-                    <div class="mb-4 text-center">
-                        <button type="button" class="w-full text-white font-medium px-6 py-3 shadow-sm transition-colors text-base" style="background:#4E7CFF; border-radius:0; border:none;" onclick="toggleCamera()" id="camera-btn" onmouseover="this.style.background='#3D63CC'" onmouseout="this.style.background='#4E7CFF'">
-                            <i class="fas fa-camera mr-2"></i><span class="text-white">Start Scanning</span>
-                        </button>
-                    </div>
                     
                     <div class="relative mb-4">
                         <div class="absolute inset-0 flex items-center">
@@ -157,7 +158,6 @@ async function toggleCamera() {
             await video.play();
             
             document.getElementById('camera-container').style.display = 'block';
-            document.getElementById('manual-input').style.display = 'none';
             
             cameraBtn.innerHTML = '<i class="fas fa-stop mr-2"></i><span class="text-white">Stop Camera</span>';
             cameraBtn.style.background = '#F65164';
@@ -196,7 +196,6 @@ function stopCamera() {
     }
     
     document.getElementById('camera-container').style.display = 'none';
-    document.getElementById('manual-input').style.display = 'block';
     
     const cameraBtn = document.getElementById('camera-btn');
     cameraBtn.innerHTML = '<i class="fas fa-camera mr-2"></i><span class="text-white">Start Camera</span>';
