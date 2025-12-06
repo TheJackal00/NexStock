@@ -10,21 +10,21 @@
     <!-- Header with Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-primary-900">🔄 Import & Export Data</h1>
-            <p class="mt-2 text-sm text-primary-600">Manage data transfer with CSV file imports and exports</p>
+            <h1 class="text-2xl font-bold numerro-text-primary">🔄 Import & Export Data</h1>
+            <p class="mt-2 text-sm numerro-text-secondary">Manage data transfer with CSV file imports and exports</p>
         </div>
         <div class="mt-4 sm:mt-0 flex space-x-3">
             <button 
                 type="button" 
                 onclick="refreshData()"
-                class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" style="border-radius:0">
+                class="inline-flex items-center px-4 py-2 numerro-border text-sm font-medium numerro-text-primary bg-white focus:outline-none transition-colors" style="border-radius:0; border-width:1px;" onmouseover="this.style.background='#F6F8FC'" onmouseout="this.style.background='#FFFFFF'">
                 <i class="fas fa-sync-alt mr-2"></i>
                 Refresh
             </button>
             <button 
                 type="button" 
                 onclick="showHelp()"
-                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" style="border-radius:0">
+                class="inline-flex items-center px-4 py-2 shadow-sm text-sm font-medium text-white focus:outline-none transition-colors" style="background:#4E7CFF; border-radius:0; border:none;" onmouseover="this.style.background='#3D63CC'" onmouseout="this.style.background='#4E7CFF'">
                 <i class="fas fa-question-circle mr-2"></i>
                 Help
             </button>
@@ -32,53 +32,53 @@
     </div>
 
     <!-- Export Section -->
-    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Export Data</h3>
-            <p class="mt-1 text-sm text-gray-500">Download your data in CSV format</p>
+    <div class="bg-white shadow-sm numerro-border" style="border-radius:0; border-width:1px;">
+        <div class="px-6 py-4 numerro-border" style="border-bottom-width:1px;">
+            <h3 class="text-lg font-medium numerro-text-primary">Export Data</h3>
+            <p class="mt-1 text-sm numerro-text-secondary">Download your data in CSV format</p>
         </div>
     
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-gray-50 border border-gray-200 p-6 hover:bg-gray-100 transition-colors" style="border-radius:0">
+                <div class="numerro-border p-6 transition-colors" style="background:#F6F8FC; border-radius:0; border-width:1px;" onmouseover="this.style.background='#EBEEF5'" onmouseout="this.style.background='#F6F8FC'">
                     <div class="text-center">
-                        <div class="w-12 h-12 bg-blue-600 flex items-center justify-center mx-auto mb-4" style="border-radius:0">
+                        <div class="w-12 h-12 flex items-center justify-center mx-auto mb-4" style="background:#4E7CFF; border-radius:0;">
                             <i class="fas fa-warehouse text-xl text-white"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Inventory Export</h3>
-                        <p class="text-gray-600 text-sm mb-4">Export current inventory levels with product information</p>
+                        <h3 class="text-lg font-semibold numerro-text-primary mb-2">Inventory Export</h3>
+                        <p class="numerro-text-secondary text-sm mb-4">Export current inventory levels with product information</p>
                         <button onclick="exportData('inventory')" 
-                                class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors" style="border-radius:0">
+                                class="w-full px-4 py-2 text-white font-medium text-sm transition-colors" style="background:#4E7CFF; border-radius:0; border:none;" onmouseover="this.style.background='#3D63CC'" onmouseout="this.style.background='#4E7CFF'">
                             <i class="fas fa-download mr-2"></i>
                             Export Inventory
                         </button>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 border border-gray-200 p-6 hover:bg-gray-100 transition-colors" style="border-radius:0">
+                <div class="numerro-border p-6 transition-colors" style="background:#F6F8FC; border-radius:0; border-width:1px;" onmouseover="this.style.background='#EBEEF5'" onmouseout="this.style.background='#F6F8FC'">
                     <div class="text-center">
-                        <div class="w-12 h-12 bg-green-600 flex items-center justify-center mx-auto mb-4" style="border-radius:0">
+                        <div class="w-12 h-12 flex items-center justify-center mx-auto mb-4" style="background:#22C0FF; border-radius:0;">
                             <i class="fas fa-exchange-alt text-xl text-white"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Transactions Export</h3>
-                        <p class="text-gray-600 text-sm mb-4">Export complete transaction history with timestamps</p>
+                        <h3 class="text-lg font-semibold numerro-text-primary mb-2">Transactions Export</h3>
+                        <p class="numerro-text-secondary text-sm mb-4">Export complete transaction history with timestamps</p>
                         <button onclick="exportData('transactions')" 
-                                class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors" style="border-radius:0">
+                                class="w-full px-4 py-2 text-white font-medium text-sm transition-colors" style="background:#22C0FF; border-radius:0; border:none;" onmouseover="this.style.background='#1BA3D9'" onmouseout="this.style.background='#22C0FF'">
                             <i class="fas fa-download mr-2"></i>
                             Export Transactions
                         </button>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 border border-gray-200 p-6 hover:bg-gray-100 transition-colors" style="border-radius:0">
+                <div class="numerro-border p-6 transition-colors" style="background:#F6F8FC; border-radius:0; border-width:1px;" onmouseover="this.style.background='#EBEEF5'" onmouseout="this.style.background='#F6F8FC'">
                     <div class="text-center">
-                        <div class="w-12 h-12 bg-orange-600 flex items-center justify-center mx-auto mb-4" style="border-radius:0">
+                        <div class="w-12 h-12 flex items-center justify-center mx-auto mb-4" style="background:#7033FF; border-radius:0;">
                             <i class="fas fa-chart-bar text-xl text-white"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Analytics Report</h3>
-                        <p class="text-gray-600 text-sm mb-4">Export comprehensive analytics with performance metrics</p>
+                        <h3 class="text-lg font-semibold numerro-text-primary mb-2">Analytics Report</h3>
+                        <p class="numerro-text-secondary text-sm mb-4">Export comprehensive analytics with performance metrics</p>
                         <button onclick="exportData('analytics')" 
-                                class="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium text-sm transition-colors" style="border-radius:0">
+                                class="w-full px-4 py-2 text-white font-medium text-sm transition-colors" style="background:#7033FF; border-radius:0; border:none;" onmouseover="this.style.background='#5A29CC'" onmouseout="this.style.background='#7033FF'">
                             <i class="fas fa-download mr-2"></i>
                             Export Analytics
                         </button>
@@ -89,26 +89,26 @@
     </div>
 
     <!-- Import Section -->
-    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Import Data</h3>
-            <p class="mt-1 text-sm text-gray-500">Upload CSV files to update your data</p>
+    <div class="bg-white shadow-sm numerro-border" style="border-radius:0; border-width:1px;">
+        <div class="px-6 py-4 numerro-border" style="border-bottom-width:1px;">
+            <h3 class="text-lg font-medium numerro-text-primary">Import Data</h3>
+            <p class="mt-1 text-sm numerro-text-secondary">Upload CSV files to update your data</p>
         </div>
     
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-gray-50 border border-gray-200 p-6" style="border-radius:0">
+                <div class="numerro-border p-6" style="background:#F6F8FC; border-radius:0; border-width:1px;">
                     <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-8 h-8 bg-blue-600 flex items-center justify-center" style="border-radius:0">
+                        <div class="w-8 h-8 flex items-center justify-center" style="background:#4E7CFF; border-radius:0;">
                             <i class="fas fa-boxes text-white text-sm"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Import Inventory</h3>
+                        <h3 class="text-lg font-semibold numerro-text-primary">Import Inventory</h3>
                     </div>
-                    <p class="text-gray-600 mb-4">Update inventory levels from CSV file</p>
+                    <p class="numerro-text-secondary mb-4">Update inventory levels from CSV file</p>
                     
                     <div class="mb-4">
                         <button onclick="downloadTemplate('inventory')" 
-                                class="px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors border border-gray-300" style="border-radius:0">
+                                class="px-3 py-2 bg-white numerro-text-primary text-sm font-medium transition-colors numerro-border" style="border-radius:0; border-width:1px;" onmouseover="this.style.background='#F6F8FC'" onmouseout="this.style.background='#FFFFFF'">
                             <i class="fas fa-file-csv mr-2"></i>
                             Download Template
                         </button>
@@ -116,29 +116,29 @@
                     
                     <form id="inventory-import-form" enctype="multipart/form-data" class="space-y-4">
                         <div>
-                            <label for="inventory-file" class="block text-sm font-medium text-gray-700 mb-2">Select CSV File:</label>
+                            <label for="inventory-file" class="block text-sm font-medium numerro-text-primary mb-2">Select CSV File:</label>
                             <input type="file" id="inventory-file" accept=".csv" required
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 file:transition-colors border border-gray-300" style="border-radius:0">
+                                   class="block w-full text-sm numerro-text-secondary file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-medium file:text-white file:transition-colors numerro-border" style="border-radius:0; border-width:1px; file:background:#4E7CFF;">
                         </div>
-                        <button type="submit" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors" style="border-radius:0">
+                        <button type="submit" class="w-full px-4 py-2 text-white font-medium text-sm transition-colors" style="background:#4E7CFF; border-radius:0; border:none;" onmouseover="this.style.background='#3D63CC'" onmouseout="this.style.background='#4E7CFF'">
                             <i class="fas fa-upload mr-2"></i>
                             Import Inventory
                         </button>
                     </form>
                 </div>
 
-                <div class="bg-gray-50 border border-gray-200 p-6" style="border-radius:0">
+                <div class="numerro-border p-6" style="background:#F6F8FC; border-radius:0; border-width:1px;">
                     <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-8 h-8 bg-green-600 flex items-center justify-center" style="border-radius:0">
+                        <div class="w-8 h-8 flex items-center justify-center" style="background:#22C0FF; border-radius:0;">
                             <i class="fas fa-tags text-white text-sm"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Import Products</h3>
+                        <h3 class="text-lg font-semibold numerro-text-primary">Import Products</h3>
                     </div>
-                    <p class="text-gray-600 mb-4">Add or update product information from CSV file</p>
+                    <p class="numerro-text-secondary mb-4">Add or update product information from CSV file</p>
                     
                     <div class="mb-4">
                         <button onclick="downloadTemplate('products')" 
-                                class="px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors border border-gray-300" style="border-radius:0">
+                                class="px-3 py-2 bg-white numerro-text-primary text-sm font-medium transition-colors numerro-border" style="border-radius:0; border-width:1px;" onmouseover="this.style.background='#F6F8FC'" onmouseout="this.style.background='#FFFFFF'">
                             <i class="fas fa-file-csv mr-2"></i>
                             Download Template
                         </button>
@@ -146,11 +146,11 @@
                     
                     <form id="products-import-form" enctype="multipart/form-data" class="space-y-4">
                         <div>
-                            <label for="products-file" class="block text-sm font-medium text-gray-700 mb-2">Select CSV File:</label>
+                            <label for="products-file" class="block text-sm font-medium numerro-text-primary mb-2">Select CSV File:</label>
                             <input type="file" id="products-file" accept=".csv" required
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 file:transition-colors border border-gray-300" style="border-radius:0">
+                                   class="block w-full text-sm numerro-text-secondary file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-medium file:text-white file:transition-colors numerro-border" style="border-radius:0; border-width:1px; file:background:#22C0FF;">
                         </div>
-                        <button type="submit" class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition-colors" style="border-radius:0">
+                        <button type="submit" class="w-full px-4 py-2 text-white font-medium text-sm transition-colors" style="background:#22C0FF; border-radius:0; border:none;" onmouseover="this.style.background='#1BA3D9'" onmouseout="this.style.background='#22C0FF'">
                             <i class="fas fa-upload mr-2"></i>
                             Import Products
                         </button>
@@ -162,9 +162,9 @@
 
     <!-- Import Results -->
     <div id="import-results" class="hidden">
-        <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Import Results</h3>
+        <div class="bg-white shadow-sm numerro-border" style="border-radius:0; border-width:1px;">
+            <div class="px-6 py-4 numerro-border" style="border-bottom-width:1px;">
+                <h3 class="text-lg font-medium numerro-text-primary">Import Results</h3>
             </div>
             <div class="p-6">
                 <div id="import-results-content">
@@ -175,62 +175,62 @@
     </div>
 
     <!-- Data Format Guide -->
-    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Data Format Guide</h3>
+    <div class="bg-white shadow-sm numerro-border" style="border-radius:0; border-width:1px;">
+        <div class="px-6 py-4 numerro-border" style="border-bottom-width:1px;">
+            <h3 class="text-lg font-medium numerro-text-primary">Data Format Guide</h3>
         </div>
         
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <div class="w-6 h-6 bg-blue-600 mr-2 flex items-center justify-center" style="border-radius:0">
+                    <h3 class="text-lg font-semibold numerro-text-primary mb-4 flex items-center">
+                        <div class="w-6 h-6 mr-2 flex items-center justify-center" style="background:#4E7CFF; border-radius:0;">
                             <i class="fas fa-table text-white text-xs"></i>
                         </div>
                         Inventory CSV Format
                     </h3>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full border border-gray-200" style="border-radius:0">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full numerro-border" style="border-radius:0; border-width:1px;">
+                            <thead style="background:#F6F8FC;">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Column</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Required</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Description</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Column</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Required</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Description</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td class="px-4 py-3 text-sm font-mono text-gray-800 bg-gray-50">SKU</td>
+                            <tbody class="bg-white">
+                                <tr style="border-top:1px solid #B4BAC3;">
+                                    <td class="px-4 py-3 text-sm font-mono numerro-text-primary" style="background:#F6F8FC;">SKU</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <span class="px-2 py-1 text-xs font-medium bg-red-600 text-white" style="border-radius:0">
+                                        <span class="px-2 py-1 text-xs font-medium text-white" style="background:#F65164; border-radius:0;">
                                             Required
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">Product identifier (text)</td>
+                                    <td class="px-4 py-3 text-sm numerro-text-secondary">Product identifier (text)</td>
                                 </tr>
-                                <tr>
-                                    <td class="px-4 py-3 text-sm font-mono text-gray-800 bg-gray-50">VOLUME</td>
+                                <tr style="border-top:1px solid #B4BAC3;">
+                                    <td class="px-4 py-3 text-sm font-mono numerro-text-primary" style="background:#F6F8FC;">VOLUME</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <span class="px-2 py-1 text-xs font-medium bg-red-600 text-white" style="border-radius:0">
+                                        <span class="px-2 py-1 text-xs font-medium text-white" style="background:#F65164; border-radius:0;">
                                             Required
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">Stock quantity (numeric)</td>
+                                    <td class="px-4 py-3 text-sm numerro-text-secondary">Stock quantity (numeric)</td>
                                 </tr>
-                                <tr>
-                                    <td class="px-4 py-3 text-sm font-mono text-gray-800 bg-gray-50">DATE</td>
+                                <tr style="border-top:1px solid #B4BAC3;">
+                                    <td class="px-4 py-3 text-sm font-mono numerro-text-primary" style="background:#F6F8FC;">DATE</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <span class="px-2 py-1 text-xs font-medium bg-gray-400 text-white" style="border-radius:0">
+                                        <span class="px-2 py-1 text-xs font-medium numerro-text-secondary" style="background:#F6F8FC; border-radius:0;">
                                             Optional
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">Inventory date (YYYY-MM-DD format)</td>
+                                    <td class="px-4 py-3 text-sm numerro-text-secondary">Inventory date (YYYY-MM-DD format)</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div class="bg-blue-50 border border-blue-200 p-3 mt-4" style="border-radius:0">
-                        <p class="text-sm text-blue-800">
+                    <div class="numerro-border p-3 mt-4" style="background:rgba(78,124,255,0.1); border-radius:0; border-width:1px;">
+                        <p class="text-sm" style="color:#4E7CFF;">
                             <i class="fas fa-info-circle mr-2"></i>
                             <strong>Note:</strong> If DATE is not provided, current date will be used automatically.
                         </p>
@@ -238,44 +238,44 @@
                 </div>
 
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <div class="w-6 h-6 bg-green-600 mr-2 flex items-center justify-center" style="border-radius:0">
+                    <h3 class="text-lg font-semibold numerro-text-primary mb-4 flex items-center">
+                        <div class="w-6 h-6 mr-2 flex items-center justify-center" style="background:#22C0FF; border-radius:0;">
                             <i class="fas fa-table text-white text-xs"></i>
                         </div>
                         Products CSV Format
                     </h3>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full border border-gray-200" style="border-radius:0">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full numerro-border" style="border-radius:0; border-width:1px;">
+                            <thead style="background:#F6F8FC;">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Column</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Required</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Description</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Column</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Required</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Description</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td class="px-4 py-3 text-sm font-mono text-gray-800 bg-gray-50">SKU</td>
+                            <tbody class="bg-white">
+                                <tr style="border-top:1px solid #B4BAC3;">
+                                    <td class="px-4 py-3 text-sm font-mono numerro-text-primary" style="background:#F6F8FC;">SKU</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <span class="px-2 py-1 text-xs font-medium bg-red-600 text-white" style="border-radius:0">
+                                        <span class="px-2 py-1 text-xs font-medium text-white" style="background:#F65164; border-radius:0;">
                                             Required
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">Product identifier (text)</td>
+                                    <td class="px-4 py-3 text-sm numerro-text-secondary">Product identifier (text)</td>
                                 </tr>
-                                <tr>
-                                    <td class="px-4 py-3 text-sm font-mono text-gray-800 bg-gray-50">NAME</td>
+                                <tr style="border-top:1px solid #B4BAC3;">
+                                    <td class="px-4 py-3 text-sm font-mono numerro-text-primary" style="background:#F6F8FC;">NAME</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <span class="px-2 py-1 text-xs font-medium bg-gray-400 text-white" style="border-radius:0">
+                                        <span class="px-2 py-1 text-xs font-medium numerro-text-secondary" style="background:#F6F8FC; border-radius:0;">
                                             Optional
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">Product name (text)</td>
+                                    <td class="px-4 py-3 text-sm numerro-text-secondary">Product name (text)</td>
                                 </tr>
-                                <tr>
-                                    <td class="px-4 py-3 text-sm font-mono text-gray-800 bg-gray-50">COST</td>
+                                <tr style="border-top:1px solid #B4BAC3;">
+                                    <td class="px-4 py-3 text-sm font-mono numerro-text-primary" style="background:#F6F8FC;">COST</td>
                                     <td class="px-4 py-3 text-sm">
-                                        <span class="px-2 py-1 text-xs font-medium bg-gray-400 text-white" style="border-radius:0">
+                                        <span class="px-2 py-1 text-xs font-medium numerro-text-secondary" style="background:#F6F8FC; border-radius:0;">
                                             Optional
                                         </span>
                                     </td>
