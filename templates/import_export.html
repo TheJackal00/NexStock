@@ -314,31 +314,49 @@
     </div>
     
     <!-- Additional Format Information -->
-    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Export Formats Reference</h3>
+    <div class="bg-white shadow-sm numerro-border" style="border-radius:0; border-width:1px;">
+        <div class="px-6 py-4 numerro-border" style="border-bottom-width:1px; background:rgba(78,124,255,0.05);">
+            <h3 class="text-lg font-medium numerro-text-primary flex items-center">
+                <i class="fas fa-file-export mr-2" style="color:#4E7CFF;"></i>
+                Export Formats Reference
+            </h3>
         </div>
         
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-gray-50 border border-gray-200 p-4" style="border-radius:0">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Inventory Export</h3>
-                    <p class="text-sm text-gray-600">
-                        Includes: SKU, VOLUME, DATE<br>
+                <div class="numerro-border p-5" style="background:rgba(78,124,255,0.05); border-radius:0; border-width:1px; border-left-width:4px; border-left-color:#4E7CFF;">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 flex items-center justify-center mr-3" style="background:rgba(78,124,255,0.15); border-radius:0;">
+                            <i class="fas fa-warehouse" style="color:#4E7CFF;"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold numerro-text-primary">Inventory Export</h3>
+                    </div>
+                    <p class="text-sm numerro-text-secondary leading-relaxed">
+                        <strong>Includes:</strong> SKU, VOLUME, DATE<br>
                         Shows current stock levels with latest inventory dates
                     </p>
                 </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-slate-800 mb-2">Transactions Export</h3>
-                    <p class="text-sm text-slate-600">
-                        Includes: SKU, VOLUME, DOCUMENT_TYPE, DOC_NUMBER, DATE<br>
+                <div class="numerro-border p-5" style="background:rgba(34,192,255,0.05); border-radius:0; border-width:1px; border-left-width:4px; border-left-color:#22C0FF;">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 flex items-center justify-center mr-3" style="background:rgba(34,192,255,0.15); border-radius:0;">
+                            <i class="fas fa-exchange-alt" style="color:#22C0FF;"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold numerro-text-primary">Transactions Export</h3>
+                    </div>
+                    <p class="text-sm numerro-text-secondary leading-relaxed">
+                        <strong>Includes:</strong> SKU, VOLUME, DOCUMENT_TYPE, DOC_NUMBER, DATE<br>
                         Complete transaction history with document references
                     </p>
                 </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-slate-800 mb-2">Analytics Export</h3>
-                    <p class="text-sm text-slate-600">
-                        Includes: SKU, demand statistics, turnover ratios<br>
+                <div class="numerro-border p-5" style="background:rgba(112,51,255,0.05); border-radius:0; border-width:1px; border-left-width:4px; border-left-color:#7033FF;">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 flex items-center justify-center mr-3" style="background:rgba(112,51,255,0.15); border-radius:0;">
+                            <i class="fas fa-chart-bar" style="color:#7033FF;"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold numerro-text-primary">Analytics Export</h3>
+                    </div>
+                    <p class="text-sm numerro-text-secondary leading-relaxed">
+                        <strong>Includes:</strong> SKU, demand statistics, turnover ratios<br>
                         Performance metrics and analysis data
                     </p>
                 </div>
@@ -347,30 +365,51 @@
     </div>
     
     <!-- Sample Data Examples -->
-    <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-        <div class="bg-slate-50 border-b border-slate-200 px-6 py-4">
-            <h2 class="text-xl font-semibold text-slate-900">Sample CSV Data</h2>
+    <div class="bg-white shadow-sm numerro-border overflow-hidden" style="border-radius:0; border-width:1px;">
+        <div class="numerro-border px-6 py-4" style="background:rgba(112,51,255,0.05); border-bottom-width:1px;">
+            <h2 class="text-xl font-semibold numerro-text-primary flex items-center">
+                <i class="fas fa-code mr-2" style="color:#7033FF;"></i>
+                Sample CSV Data
+            </h2>
         </div>
         
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-slate-50 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Inventory CSV Example</h3>
-                    <pre class="text-xs bg-white p-3 rounded border text-slate-700 overflow-x-auto">SKU,VOLUME,DATE
+                <div class="numerro-border p-5" style="background:#F6F8FC; border-radius:0; border-width:1px;">
+                    <div class="flex items-center mb-3">
+                        <div class="w-8 h-8 flex items-center justify-center mr-2" style="background:#4E7CFF; border-radius:0;">
+                            <i class="fas fa-warehouse text-white text-sm"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold numerro-text-primary">Inventory CSV Example</h3>
+                    </div>
+                    <pre class="text-xs bg-white p-4 numerro-border numerro-text-primary overflow-x-auto" style="border-radius:0; border-width:1px; font-family:Consolas,Monaco,monospace; line-height:1.6;">SKU,VOLUME,DATE
 001,150,2024-10-22
 002,75,2024-10-22
 003,200,2024-10-21
 004,50,2024-10-22
 005,125,2024-10-22</pre>
+                    <p class="text-xs numerro-text-secondary mt-2">
+                        <i class="fas fa-info-circle mr-1" style="color:#4E7CFF;"></i>
+                        3 columns: Product ID, Quantity, Date
+                    </p>
                 </div>
-                <div class="bg-slate-50 rounded-lg p-4">
-                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Products CSV Example</h3>
-                    <pre class="text-xs bg-white p-3 rounded border text-slate-700 overflow-x-auto">SKU,NAME,COST,MARGIN,EXPIRATION
+                <div class="numerro-border p-5" style="background:#F6F8FC; border-radius:0; border-width:1px;">
+                    <div class="flex items-center mb-3">
+                        <div class="w-8 h-8 flex items-center justify-center mr-2" style="background:#22C0FF; border-radius:0;">
+                            <i class="fas fa-tags text-white text-sm"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold numerro-text-primary">Products CSV Example</h3>
+                    </div>
+                    <pre class="text-xs bg-white p-4 numerro-border numerro-text-primary overflow-x-auto" style="border-radius:0; border-width:1px; font-family:Consolas,Monaco,monospace; line-height:1.6;">SKU,NAME,COST,MARGIN,EXPIRATION
 001,Wireless Headphones,25.50,0.25,365
 002,Smartphone Case,8.00,0.40,730
 003,Bluetooth Speaker,45.00,0.20,365
 004,USB Cable,3.50,0.60,1095
 005,Power Bank,18.00,0.30,365</pre>
+                    <p class="text-xs numerro-text-secondary mt-2">
+                        <i class="fas fa-info-circle mr-1" style="color:#22C0FF;"></i>
+                        5 columns: ID, Name, Cost, Margin%, Days to expire
+                    </p>
                 </div>
             </div>
         </div>
