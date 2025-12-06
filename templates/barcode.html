@@ -6,26 +6,26 @@
 {% block page_description %}QR Code & Barcode Management{% endblock %}
 
 {% block main %}
-<div class="space-y-6 bg-gray-50 p-2 md:p-4" style="min-height:100vh">
+<div class="space-y-6 p-2 md:p-4" style="min-height:100vh; background:#F6F8FC;">
     <!-- Header Section -->
-    <div class="bg-white shadow-sm border border-gray-200 p-6" style="border-radius:0">
+    <div class="bg-white shadow-sm numerro-border p-6" style="border-radius:0; border-width:1px;">
         <div>
-            <h1 class="text-3xl font-bold text-slate-800 mb-2">📱 Barcode & QR Scanner</h1>
-            <p class="text-slate-500 text-lg">Scan products with camera or enter SKU manually</p>
+            <h1 class="text-3xl font-bold numerro-text-primary mb-2">📱 Barcode & QR Scanner</h1>
+            <p class="numerro-text-secondary text-lg">Scan products with camera or enter SKU manually</p>
         </div>
     </div>
 
     <!-- Scanner Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Camera/Input Area -->
-        <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                <h6 class="text-sm font-medium text-gray-800">Scanner</h6>
+        <div class="bg-white shadow-sm numerro-border" style="border-radius:0; border-width:1px;">
+            <div class="px-4 py-3 numerro-border" style="border-bottom-width:1px; background:#F6F8FC;">
+                <h6 class="text-sm font-medium numerro-text-primary">Scanner</h6>
             </div>
             <div class="p-6">
                 <!-- Camera View -->
                 <div id="camera-container" class="mb-4" style="display: none;">
-                    <video id="video" class="w-full border-2 border-dashed border-gray-300" style="max-height: 400px;"></video>
+                    <video id="video" class="w-full numerro-border" style="max-height: 400px; border-width:2px; border-style:dashed;"></video>
                     <canvas id="canvas" style="display: none;"></canvas>
                 </div>
                 
@@ -33,26 +33,26 @@
                 <div id="manual-input">
                     <!-- Camera Button -->
                     <div class="mb-4 text-center">
-                        <button type="button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 shadow-sm transition-colors text-base" style="border-radius:0" onclick="toggleCamera()" id="camera-btn">
+                        <button type="button" class="w-full text-white font-medium px-6 py-3 shadow-sm transition-colors text-base" style="background:#4E7CFF; border-radius:0; border:none;" onclick="toggleCamera()" id="camera-btn" onmouseover="this.style.background='#3D63CC'" onmouseout="this.style.background='#4E7CFF'">
                             <i class="fas fa-camera mr-2"></i><span class="text-white">Start Scanning</span>
                         </button>
                     </div>
                     
                     <div class="relative mb-4">
                         <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t border-gray-300"></div>
+                            <div class="w-full numerro-border" style="border-top-width:1px;"></div>
                         </div>
                         <div class="relative flex justify-center text-sm">
-                            <span class="px-2 bg-white text-gray-500">or enter manually</span>
+                            <span class="px-2 bg-white numerro-text-secondary">or enter manually</span>
                         </div>
                     </div>
                     
                     <div class="mb-4">
-                        <label for="manual-barcode" class="block text-sm font-medium text-gray-700 mb-2">Enter SKU or Barcode:</label>
-                        <input type="text" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" style="border-radius:0" id="manual-barcode" placeholder="Type SKU...">
+                        <label for="manual-barcode" class="block text-sm font-medium numerro-text-primary mb-2">Enter SKU or Barcode:</label>
+                        <input type="text" class="w-full px-4 py-3 numerro-border focus:outline-none text-base" style="border-radius:0; border-width:1px; font-size:16px;" id="manual-barcode" placeholder="Type SKU...">
                     </div>
                     <div class="text-center">
-                        <button class="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium px-6 py-3 shadow-sm transition-colors text-base" style="border-radius:0" onclick="lookupProduct()">
+                        <button class="w-full text-white font-medium px-6 py-3 shadow-sm transition-colors text-base" style="background:#7033FF; border-radius:0; border:none;" onclick="lookupProduct()" onmouseover="this.style.background='#5A29CC'" onmouseout="this.style.background='#7033FF'">
                             <i class="fas fa-search mr-2"></i><span class="text-white">Lookup Product</span>
                         </button>
                     </div>
@@ -60,7 +60,7 @@
                 
                 <!-- Scan Result -->
                 <div id="scan-result" class="mt-4" style="display: none;">
-                    <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3" style="border-radius:0">
+                    <div class="numerro-border px-4 py-3" style="background:rgba(34,192,255,0.1); color:#22C0FF; border-radius:0; border-width:1px;">
                         <strong>Scanned:</strong> <span id="scanned-data"></span>
                     </div>
                 </div>
@@ -68,40 +68,40 @@
         </div>
 
         <!-- Product Information -->
-        <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0">
-            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                <h6 class="text-sm font-medium text-gray-800">Product Information</h6>
+        <div class="bg-white shadow-sm numerro-border" style="border-radius:0; border-width:1px;">
+            <div class="px-4 py-3 numerro-border" style="border-bottom-width:1px; background:#F6F8FC;">
+                <h6 class="text-sm font-medium numerro-text-primary">Product Information</h6>
             </div>
             <div class="p-6">
                 <div id="product-info" style="display: none;">
                     <table class="w-full">
-                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">SKU:</td><td class="py-3 text-right text-gray-900" id="info-sku">-</td></tr>
-                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Name:</td><td class="py-3 text-right text-gray-900" id="info-name">-</td></tr>
-                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Cost:</td><td class="py-3 text-right text-gray-900" id="info-cost">-</td></tr>
-                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Margin:</td><td class="py-3 text-right text-gray-900" id="info-margin">-</td></tr>
-                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Current Stock:</td><td class="py-3 text-right text-gray-900 font-bold" id="info-stock">-</td></tr>
-                        <tr class="border-b border-gray-100"><td class="py-3 font-medium text-gray-700">Expiration:</td><td class="py-3 text-right text-gray-900" id="info-expiration">-</td></tr>
+                        <tr style="border-bottom:1px solid #B4BAC3;"><td class="py-3 font-medium numerro-text-secondary">SKU:</td><td class="py-3 text-right numerro-text-primary" id="info-sku">-</td></tr>
+                        <tr style="border-bottom:1px solid #B4BAC3;"><td class="py-3 font-medium numerro-text-secondary">Name:</td><td class="py-3 text-right numerro-text-primary" id="info-name">-</td></tr>
+                        <tr style="border-bottom:1px solid #B4BAC3;"><td class="py-3 font-medium numerro-text-secondary">Cost:</td><td class="py-3 text-right numerro-text-primary" id="info-cost">-</td></tr>
+                        <tr style="border-bottom:1px solid #B4BAC3;"><td class="py-3 font-medium numerro-text-secondary">Margin:</td><td class="py-3 text-right numerro-text-primary" id="info-margin">-</td></tr>
+                        <tr style="border-bottom:1px solid #B4BAC3;"><td class="py-3 font-medium numerro-text-secondary">Current Stock:</td><td class="py-3 text-right numerro-text-primary font-bold" id="info-stock">-</td></tr>
+                        <tr style="border-bottom:1px solid #B4BAC3;"><td class="py-3 font-medium numerro-text-secondary">Expiration:</td><td class="py-3 text-right numerro-text-primary" id="info-expiration">-</td></tr>
                     </table>
                     
-                    <h6 class="text-sm font-medium text-gray-800 mt-6 mb-3">Recent Transactions</h6>
+                    <h6 class="text-sm font-medium numerro-text-primary mt-6 mb-3">Recent Transactions</h6>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full border border-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full numerro-border" style="border-width:1px; border-radius:0;">
+                            <thead style="background:#F6F8FC;">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase">Volume</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-600 uppercase">Type</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium numerro-text-secondary uppercase">Volume</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium numerro-text-secondary uppercase">Type</th>
                                 </tr>
                             </thead>
-                            <tbody id="recent-transactions" class="divide-y divide-gray-100">
+                            <tbody id="recent-transactions" class="bg-white">
                             </tbody>
                         </table>
                     </div>
                 </div>
                 
-                <div id="no-product-info" class="text-center text-gray-500 py-12">
-                    <i class="fas fa-search text-6xl mb-4 text-gray-300"></i>
+                <div id="no-product-info" class="text-center numerro-text-secondary py-12">
+                    <i class="fas fa-search text-6xl mb-4" style="color:#B4BAC3;"></i>
                     <p class="text-lg">Scan or enter a product code</p>
-                    <p class="text-sm text-gray-400 mt-2">to view information</p>
+                    <p class="text-sm numerro-text-secondary mt-2">to view information</p>
                 </div>
             </div>
         </div>
@@ -160,8 +160,9 @@ async function toggleCamera() {
             document.getElementById('manual-input').style.display = 'none';
             
             cameraBtn.innerHTML = '<i class="fas fa-stop mr-2"></i><span class="text-white">Stop Camera</span>';
-            cameraBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            cameraBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+            cameraBtn.style.background = '#F65164';
+            cameraBtn.onmouseover = function() { this.style.background = '#C44050'; };
+            cameraBtn.onmouseout = function() { this.style.background = '#F65164'; };
             
             scanning = true;
             console.log('Starting QR scan loop...');
@@ -199,8 +200,9 @@ function stopCamera() {
     
     const cameraBtn = document.getElementById('camera-btn');
     cameraBtn.innerHTML = '<i class="fas fa-camera mr-2"></i><span class="text-white">Start Camera</span>';
-    cameraBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-    cameraBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+    cameraBtn.style.background = '#4E7CFF';
+    cameraBtn.onmouseover = function() { this.style.background = '#3D63CC'; };
+    cameraBtn.onmouseout = function() { this.style.background = '#4E7CFF'; };
     
     scanning = false;
 }
@@ -276,18 +278,18 @@ function displayProductInfo(data) {
     if (data.recent_transactions && data.recent_transactions.length > 0) {
         data.recent_transactions.forEach(transaction => {
             const row = tbody.insertRow();
-            const badgeClass = transaction.VOLUME > 0 ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200';
+            const badgeStyle = transaction.VOLUME > 0 ? 'background:rgba(34,192,255,0.1); color:#22C0FF; border:1px solid #22C0FF;' : 'background:rgba(246,81,100,0.1); color:#F65164; border:1px solid #F65164;';
             row.innerHTML = `
-                <td class="px-4 py-2 text-gray-900">${Math.abs(transaction.VOLUME)}</td>
+                <td class="px-4 py-2 numerro-text-primary">${Math.abs(transaction.VOLUME)}</td>
                 <td class="px-4 py-2">
-                    <span class="inline-block px-3 py-1 text-xs font-medium ${badgeClass}" style="border-radius:0">
+                    <span class="inline-block px-3 py-1 text-xs font-medium" style="border-radius:0; ${badgeStyle}">
                         ${transaction.VOLUME > 0 ? 'IN' : 'OUT'}
                     </span>
                 </td>
             `;
         });
     } else {
-        tbody.innerHTML = '<tr><td colspan="2" class="px-4 py-4 text-center text-gray-500">No recent transactions</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="2" class="px-4 py-4 text-center numerro-text-secondary">No recent transactions</td></tr>';
     }
     
     document.getElementById('product-info').style.display = 'block';
