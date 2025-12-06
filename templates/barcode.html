@@ -161,8 +161,8 @@ async function toggleCamera() {
             
             cameraBtn.innerHTML = '<i class="fas fa-stop mr-2"></i><span class="text-white">Stop Camera</span>';
             cameraBtn.style.background = '#F65164';
-            cameraBtn.onmouseover = function() { this.style.background = '#C44050'; };
-            cameraBtn.onmouseout = function() { this.style.background = '#F65164'; };
+            cameraBtn.setAttribute('onmouseover', "this.style.background='#C44050'");
+            cameraBtn.setAttribute('onmouseout', "this.style.background='#F65164'");
             
             scanning = true;
             console.log('Starting QR scan loop...');
@@ -201,8 +201,8 @@ function stopCamera() {
     const cameraBtn = document.getElementById('camera-btn');
     cameraBtn.innerHTML = '<i class="fas fa-camera mr-2"></i><span class="text-white">Start Camera</span>';
     cameraBtn.style.background = '#4E7CFF';
-    cameraBtn.onmouseover = function() { this.style.background = '#3D63CC'; };
-    cameraBtn.onmouseout = function() { this.style.background = '#4E7CFF'; };
+    cameraBtn.setAttribute('onmouseover', "this.style.background='#3D63CC'");
+    cameraBtn.setAttribute('onmouseout', "this.style.background='#4E7CFF'");
     
     scanning = false;
 }
