@@ -80,7 +80,7 @@
                         </div>
                         <div class="bg-white numerro-border p-3" style="border-width:1px">
                             <div class="flex items-start">
-                                <i class="fas fa-warehouse mt-1 mr-2" style="color:#10B981"></i>
+                                <i class="fas fa-warehouse mt-1 mr-2" style="color:#22C0FF"></i>
                                 <div class="flex-1">
                                     <label for="holding_cost_rate" class="text-xs numerro-text-secondary mb-1 block">Holding Cost Rate</label>
                                     <div class="flex items-center">
@@ -113,17 +113,16 @@
                                                max="10"
                                                step="0.1"
                                                class="w-20 px-2 py-1 numerro-border text-sm focus:outline-none" 
-                                               style="border-radius:0;border-width:1px" 
-                                               style="border-radius:0">
-                                        <span class="text-slate-600 ml-1">&nbsp;x</span>
+                                               style="border-radius:0;border-width:1px">
+                                        <span class="numerro-text-secondary ml-1">&nbsp;x</span>
                                     </div>
-                                    <div class="text-xs text-slate-500 mt-1">Multiplier over margin</div>
+                                    <div class="text-xs numerro-text-secondary mt-1">Multiplier over margin</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-3 text-xs text-slate-600 bg-white border border-blue-200 p-3">
-                        <i class="fas fa-info-circle text-blue-600 mr-1"></i>
+                    <div class="mt-3 text-xs numerro-text-secondary bg-white numerro-border p-3" style="border-radius:0;border-width:1px">
+                        <i class="fas fa-info-circle mr-1" style="color:#4E7CFF"></i>
                         <strong>Note:</strong> These parameters are used by the Integer Linear Programming (ILP) solver to minimize total costs while maintaining service levels. 
                         Product-specific values (cost, margin, expiration) are loaded from the products table.
                     </div>
@@ -132,12 +131,12 @@
         </div>
 
         {% if error %}
-            <div class="bg-red-50 border border-red-200 p-4">
+            <div class="numerro-border p-4" style="background-color:rgba(246,81,100,0.1);border-radius:0;border-width:1px;border-color:#F65164">
                 <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                    <i class="fas fa-exclamation-triangle mr-2" style="color:#F65164"></i>
                     <div>
-                        <div class="text-sm font-medium text-red-800">{{ error }}</div>
-                        <div class="text-xs text-red-700 mt-1">
+                        <div class="text-sm font-medium" style="color:#F65164">{{ error }}</div>
+                        <div class="text-xs mt-1" style="color:#F65164">
                             {% if 'No simulation data found' in error %}
                                 Run simulation first: <a href="/simulate" class="underline hover:text-red-600">Go to Simulation</a>
                             {% elif 'No products found' in error %}
@@ -151,17 +150,17 @@
 
     {% if results %}
         <!-- Filter Controls -->
-        <div class="bg-white border border-slate-200 shadow-sm mb-4" style="border-radius:0">
-            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
-                <h3 class="text-sm font-semibold text-slate-900 flex items-center">
-                    <i class="fas fa-filter mr-2"></i>
+        <div class="bg-white numerro-border shadow-sm mb-4" style="border-radius:0;border-width:1px">
+            <div class="px-4 py-3 numerro-border" style="border-bottom-width:1px;background-color:#F6F8FC">
+                <h3 class="text-sm font-semibold numerro-text-primary flex items-center">
+                    <i class="fas fa-filter mr-2" style="color:#4E7CFF"></i>
                     Filter & Sort Results
                 </h3>
             </div>
             <div class="p-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                        <label for="sku-filter" class="block text-xs font-medium text-slate-600 mb-1">SKU</label>
+                        <label for="sku-filter" class="block text-xs font-medium numerro-text-secondary mb-1">SKU</label>
                         <select class="form-select form-select-sm w-full" id="sku-filter">
                             <option value="all">All SKUs</option>
                             {% for sku in all_optimizations.keys() %}
@@ -170,7 +169,7 @@
                         </select>
                     </div>
                     <div>
-                        <label for="sort-by" class="block text-xs font-medium text-slate-600 mb-1">Sort By</label>
+                        <label for="sort-by" class="block text-xs font-medium numerro-text-secondary mb-1">Sort By</label>
                         <select class="form-select form-select-sm w-full" id="sort-by">
                             <option value="cost">Sort by Cost</option>
                             <option value="orders">Sort by Orders</option>
@@ -187,10 +186,10 @@
         </div>
 
         <!-- Optimization Summary -->
-        <div class="bg-white shadow-sm border border-slate-200 mb-4" style="border-radius:0">
-            <div class="bg-slate-50 border-b border-slate-200 px-6 py-3">
-                <h2 class="text-lg font-semibold text-slate-900 flex items-center">
-                    <i class="fas fa-chart-bar mr-2"></i>
+        <div class="bg-white shadow-sm numerro-border mb-4" style="border-radius:0;border-width:1px">
+            <div class="numerro-border px-6 py-3" style="background-color:#F6F8FC;border-bottom-width:1px">
+                <h2 class="text-lg font-semibold numerro-text-primary flex items-center">
+                    <i class="fas fa-chart-bar mr-2" style="color:#4E7CFF"></i>
                     Optimization Summary
                 </h2>
             </div>
@@ -198,57 +197,57 @@
             <div class="p-6">
                 <!-- Key Metrics Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div class="text-center bg-blue-50 border border-blue-200 p-4">
-                        <div class="text-3xl font-bold text-blue-600" id="summary-skus-count">{{ results|length }}</div>
-                        <div class="text-xs text-slate-600 mt-1">SKUs Optimized</div>
+                    <div class="text-center numerro-border p-4" style="background-color:rgba(78,124,255,0.1);border-radius:0;border-width:1px;border-color:#4E7CFF">
+                        <div class="text-3xl font-bold" style="color:#4E7CFF" id="summary-skus-count">{{ results|length }}</div>
+                        <div class="text-xs numerro-text-secondary mt-1">SKUs Optimized</div>
                     </div>
-                    <div class="text-center bg-purple-50 border border-purple-200 p-4">
-                        <div class="text-3xl font-bold text-purple-600">{{ summary.simulation_days }}</div>
-                        <div class="text-xs text-slate-600 mt-1">Days Planned</div>
+                    <div class="text-center numerro-border p-4" style="background-color:rgba(112,51,255,0.1);border-radius:0;border-width:1px;border-color:#7033FF">
+                        <div class="text-3xl font-bold" style="color:#7033FF">{{ summary.simulation_days }}</div>
+                        <div class="text-xs numerro-text-secondary mt-1">Days Planned</div>
                     </div>
-                    <div class="text-center bg-green-50 border border-green-200 p-4">
-                        <div class="text-3xl font-bold text-green-600" id="summary-service-level">{{ "%.0f"|format(summary.avg_service_level|default(0)) }}%</div>
-                        <div class="text-xs text-slate-600 mt-1">Avg Service Level</div>
+                    <div class="text-center numerro-border p-4" style="background-color:rgba(34,192,255,0.1);border-radius:0;border-width:1px;border-color:#22C0FF">
+                        <div class="text-3xl font-bold" style="color:#22C0FF" id="summary-service-level">{{ "%.0f"|format(summary.avg_service_level|default(0)) }}%</div>
+                        <div class="text-xs numerro-text-secondary mt-1">Avg Service Level</div>
                     </div>
-                    <div class="text-center bg-orange-50 border border-orange-200 p-4">
-                        <div class="text-3xl font-bold text-orange-600" id="summary-total-cost">${{ "{:,.0f}".format(summary.cost_breakdown.total_cost|default(0)) }}</div>
-                        <div class="text-xs text-slate-600 mt-1">Total Cost</div>
+                    <div class="text-center numerro-border p-4" style="background-color:rgba(220,118,83,0.1);border-radius:0;border-width:1px;border-color:#DC7653">
+                        <div class="text-3xl font-bold" style="color:#DC7653" id="summary-total-cost">${{ "{:,.0f}".format(summary.cost_breakdown.total_cost|default(0)) }}</div>
+                        <div class="text-xs numerro-text-secondary mt-1">Total Cost</div>
                     </div>
                 </div>
 
                 <!-- Cost Breakdown -->
-                <div class="border-t border-slate-200 pt-4">
-                    <h3 class="text-sm font-semibold text-slate-700 mb-3">Cost Breakdown</h3>
+                <div class="numerro-border pt-4" style="border-top-width:1px">
+                    <h3 class="text-sm font-semibold numerro-text-primary mb-3">Cost Breakdown</h3>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                        <div class="bg-blue-50 border border-blue-200 p-3 text-center">
-                            <i class="fas fa-truck text-blue-600 mb-1"></i>
-                            <div class="text-xs text-slate-600">Ordering</div>
-                            <div class="text-lg font-bold text-blue-700" id="summary-ordering-cost">${{ "{:,.0f}".format(summary.cost_breakdown.ordering_cost|default(0)) }}</div>
-                            <div class="text-xs text-blue-500" id="summary-ordering-pct">{{ "%.1f"|format(summary.cost_percentages.ordering_cost|default(0)) }}%</div>
+                        <div class="numerro-border p-3 text-center" style="background-color:rgba(78,124,255,0.1);border-radius:0;border-width:1px;border-color:#4E7CFF">
+                            <i class="fas fa-truck mb-1" style="color:#4E7CFF"></i>
+                            <div class="text-xs numerro-text-secondary">Ordering</div>
+                            <div class="text-lg font-bold" style="color:#4E7CFF" id="summary-ordering-cost">${{ "{:,.0f}".format(summary.cost_breakdown.ordering_cost|default(0)) }}</div>
+                            <div class="text-xs" style="color:#4E7CFF" id="summary-ordering-pct">{{ "%.1f"|format(summary.cost_percentages.ordering_cost|default(0)) }}%</div>
                         </div>
-                        <div class="bg-indigo-50 border border-indigo-200 p-3 text-center">
-                            <i class="fas fa-cart-plus text-indigo-600 mb-1"></i>
-                            <div class="text-xs text-slate-600">Purchase</div>
-                            <div class="text-lg font-bold text-indigo-700" id="summary-purchase-cost">${{ "{:,.0f}".format(summary.cost_breakdown.purchase_cost|default(0)) }}</div>
-                            <div class="text-xs text-indigo-500" id="summary-purchase-pct">{{ "%.1f"|format(summary.cost_percentages.purchase_cost|default(0)) }}%</div>
+                        <div class="numerro-border p-3 text-center" style="background-color:rgba(112,51,255,0.1);border-radius:0;border-width:1px;border-color:#7033FF">
+                            <i class="fas fa-cart-plus mb-1" style="color:#7033FF"></i>
+                            <div class="text-xs numerro-text-secondary">Purchase</div>
+                            <div class="text-lg font-bold" style="color:#7033FF" id="summary-purchase-cost">${{ "{:,.0f}".format(summary.cost_breakdown.purchase_cost|default(0)) }}</div>
+                            <div class="text-xs" style="color:#7033FF" id="summary-purchase-pct">{{ "%.1f"|format(summary.cost_percentages.purchase_cost|default(0)) }}%</div>
                         </div>
-                        <div class="bg-green-50 border border-green-200 p-3 text-center">
-                            <i class="fas fa-box text-green-600 mb-1"></i>
-                            <div class="text-xs text-slate-600">Holding</div>
-                            <div class="text-lg font-bold text-green-700" id="summary-holding-cost">${{ "{:,.0f}".format(summary.cost_breakdown.holding_cost|default(0)) }}</div>
-                            <div class="text-xs text-green-500" id="summary-holding-pct">{{ "%.1f"|format(summary.cost_percentages.holding_cost|default(0)) }}%</div>
+                        <div class="numerro-border p-3 text-center" style="background-color:rgba(34,192,255,0.1);border-radius:0;border-width:1px;border-color:#22C0FF">
+                            <i class="fas fa-box mb-1" style="color:#22C0FF"></i>
+                            <div class="text-xs numerro-text-secondary">Holding</div>
+                            <div class="text-lg font-bold" style="color:#22C0FF" id="summary-holding-cost">${{ "{:,.0f}".format(summary.cost_breakdown.holding_cost|default(0)) }}</div>
+                            <div class="text-xs" style="color:#22C0FF" id="summary-holding-pct">{{ "%.1f"|format(summary.cost_percentages.holding_cost|default(0)) }}%</div>
                         </div>
-                        <div class="bg-red-50 border border-red-200 p-3 text-center">
-                            <i class="fas fa-exclamation-triangle text-red-600 mb-1"></i>
-                            <div class="text-xs text-slate-600">Stockout</div>
-                            <div class="text-lg font-bold text-red-700" id="summary-stockout-cost">${{ "{:,.0f}".format(summary.cost_breakdown.stockout_cost|default(0)) }}</div>
-                            <div class="text-xs text-red-500" id="summary-stockout-pct">{{ "%.1f"|format(summary.cost_percentages.stockout_cost|default(0)) }}%</div>
+                        <div class="numerro-border p-3 text-center" style="background-color:rgba(246,81,100,0.1);border-radius:0;border-width:1px;border-color:#F65164">
+                            <i class="fas fa-exclamation-triangle mb-1" style="color:#F65164"></i>
+                            <div class="text-xs numerro-text-secondary">Stockout</div>
+                            <div class="text-lg font-bold" style="color:#F65164" id="summary-stockout-cost">${{ "{:,.0f}".format(summary.cost_breakdown.stockout_cost|default(0)) }}</div>
+                            <div class="text-xs" style="color:#F65164" id="summary-stockout-pct">{{ "%.1f"|format(summary.cost_percentages.stockout_cost|default(0)) }}%</div>
                         </div>
-                        <div class="bg-yellow-50 border border-yellow-200 p-3 text-center">
-                            <i class="fas fa-trash text-yellow-600 mb-1"></i>
-                            <div class="text-xs text-slate-600">Waste</div>
-                            <div class="text-lg font-bold text-yellow-700" id="summary-waste-cost">${{ "{:,.0f}".format(summary.cost_breakdown.waste_cost|default(0)) }}</div>
-                            <div class="text-xs text-yellow-500" id="summary-waste-pct">{{ "%.1f"|format(summary.cost_percentages.waste_cost|default(0)) }}%</div>
+                        <div class="numerro-border p-3 text-center" style="background-color:rgba(220,118,83,0.1);border-radius:0;border-width:1px;border-color:#DC7653">
+                            <i class="fas fa-trash mb-1" style="color:#DC7653"></i>
+                            <div class="text-xs numerro-text-secondary">Waste</div>
+                            <div class="text-lg font-bold" style="color:#DC7653" id="summary-waste-cost">${{ "{:,.0f}".format(summary.cost_breakdown.waste_cost|default(0)) }}</div>
+                            <div class="text-xs" style="color:#DC7653" id="summary-waste-pct">{{ "%.1f"|format(summary.cost_percentages.waste_cost|default(0)) }}%</div>
                         </div>
                     </div>
                 </div>
@@ -258,30 +257,30 @@
         <!-- Optimization Results: Loop through SKUs and their 10 runs -->
         <div id="optimization-results">
             {% for sku, runs in all_optimizations.items() %}
-                <div class="bg-white border border-slate-200 shadow-sm mb-4" style="border-radius:0">
-                    <div class="flex items-center justify-between px-4 py-2 border-b border-slate-200 bg-slate-50">
-                        <div class="font-semibold text-slate-800">SKU: {{ sku }}
+                <div class="bg-white numerro-border shadow-sm mb-4" style="border-radius:0;border-width:1px">
+                    <div class="flex items-center justify-between px-4 py-2 numerro-border" style="border-bottom-width:1px;background-color:#F6F8FC">
+                        <div class="font-semibold numerro-text-primary">SKU: {{ sku }}
                             {% if runs and runs[0].result.product_name and runs[0].result.product_name != 'Unknown' %}
-                                <span class="text-slate-500 font-normal">({{ runs[0].result.product_name }})</span>
+                                <span class="numerro-text-secondary font-normal">({{ runs[0].result.product_name }})</span>
                             {% endif %}
                         </div>
-                        <div class="text-xs text-slate-500">{{ runs|length }} iterations</div>
+                        <div class="text-xs numerro-text-secondary">{{ runs|length }} iterations</div>
                     </div>
                     {% if runs %}
                     <div class="p-4 space-y-3" id="sku-{{ sku }}-iterations">
                         {% for run in runs %}
-                        <div class="border border-slate-200 bg-slate-50 iteration-card">
+                        <div class="numerro-border iteration-card" style="background-color:#F6F8FC;border-radius:0;border-width:1px">
                             <!-- Iteration Header (Clickable) -->
-                            <button class="w-full px-4 py-2 bg-slate-100 border-b border-slate-200 iteration-toggle hover:bg-slate-200 transition-colors" type="button">
+                            <button class="w-full px-4 py-2 numerro-border iteration-toggle hover:opacity-90 transition-colors" type="button" style="background-color:#F6F8FC;border-bottom-width:1px;border-radius:0">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
-                                        <i class="fas fa-chevron-right text-slate-600 text-xs transition-transform"></i>
-                                        <span class="font-medium text-slate-700 text-sm">Iteration {{ run.iteration }}</span>
+                                        <i class="fas fa-chevron-right numerro-text-secondary text-xs transition-transform"></i>
+                                        <span class="font-medium numerro-text-primary text-sm">Iteration {{ run.iteration }}</span>
                                     </div>
                                     <div class="flex items-center gap-4 text-xs">
-                                        <span class="text-slate-500">Cost: <span class="font-semibold text-blue-700">${{ "{:,.0f}".format(run.result.optimized_strategy.total_cost) }}</span></span>
-                                        <span class="text-slate-500">Orders: <span class="font-semibold text-green-700">{{ run.result.optimized_strategy.total_orders }}</span></span>
-                                        <span class="text-slate-500">Service: <span class="font-semibold text-purple-700">{{ run.result.optimized_strategy.service_level }}%</span></span>
+                                        <span class="numerro-text-secondary">Cost: <span class="font-semibold" style="color:#4E7CFF">${{ "{:,.0f}".format(run.result.optimized_strategy.total_cost) }}</span></span>
+                                        <span class="numerro-text-secondary">Orders: <span class="font-semibold" style="color:#22C0FF">{{ run.result.optimized_strategy.total_orders }}</span></span>
+                                        <span class="numerro-text-secondary">Service: <span class="font-semibold" style="color:#7033FF">{{ run.result.optimized_strategy.service_level }}%</span></span>
                                     </div>
                                 </div>
                             </button>
@@ -289,24 +288,24 @@
                             <div class="iteration-details hidden p-4">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <!-- Order Details -->
-                                    <div class="bg-blue-50 border border-blue-200 p-3">
-                                        <div class="font-semibold text-blue-700 mb-2 flex items-center text-xs"><i class="fas fa-cart-plus mr-2"></i>Order Details</div>
+                                    <div class="numerro-border p-3" style="background-color:rgba(78,124,255,0.1);border-radius:0;border-width:1px;border-color:#4E7CFF">
+                                        <div class="font-semibold mb-2 flex items-center text-xs" style="color:#4E7CFF"><i class="fas fa-cart-plus mr-2"></i>Order Details</div>
                                         <div class="grid grid-cols-2 gap-2 text-xs">
-                                            <div>Total Orders:<br><span class="font-bold text-slate-800">{{ run.result.optimized_strategy.total_orders }}</span></div>
-                                            <div>Total Quantity:<br><span class="font-bold text-slate-800">{{ "{:,}".format(run.result.optimized_strategy.total_quantity_ordered) }}</span></div>
-                                            <div>Avg Inventory:<br><span class="font-bold text-slate-800">{{ "{:,}".format(run.result.optimized_strategy.average_inventory|int) }} units</span></div>
-                                            <div>Stockout Days:<br><span class="font-bold {% if run.result.optimized_strategy.stockout_days > 0 %}text-yellow-600{% else %}text-green-700{% endif %}">{{ run.result.optimized_strategy.stockout_days }}</span></div>
+                                            <div>Total Orders:<br><span class="font-bold numerro-text-primary">{{ run.result.optimized_strategy.total_orders }}</span></div>
+                                            <div>Total Quantity:<br><span class="font-bold numerro-text-primary">{{ "{:,}".format(run.result.optimized_strategy.total_quantity_ordered) }}</span></div>
+                                            <div>Avg Inventory:<br><span class="font-bold numerro-text-primary">{{ "{:,}".format(run.result.optimized_strategy.average_inventory|int) }} units</span></div>
+                                            <div>Stockout Days:<br><span class="font-bold {% if run.result.optimized_strategy.stockout_days > 0 %}style="color:#DC7653"{% else %}style="color:#22C0FF"{% endif %}">{{ run.result.optimized_strategy.stockout_days }}</span></div>
                                         </div>
                                     </div>
                                     <!-- Performance Metrics -->
-                                    <div class="bg-green-50 border border-green-200 p-3">
-                                        <div class="font-semibold text-green-700 mb-2 flex items-center text-xs"><i class="fas fa-graph-up mr-2"></i>Performance</div>
+                                    <div class="numerro-border p-3" style="background-color:rgba(34,192,255,0.1);border-radius:0;border-width:1px;border-color:#22C0FF">
+                                        <div class="font-semibold mb-2 flex items-center text-xs" style="color:#22C0FF"><i class="fas fa-graph-up mr-2"></i>Performance</div>
                                         <div class="grid grid-cols-2 gap-2 text-xs">
-                                            <div>Service Level:<br><span class="font-bold text-green-800">{{ run.result.optimized_strategy.service_level }}%</span></div>
-                                            <div>Optimized Cost:<br><span class="font-bold text-blue-800">${{ "{:,.0f}".format(run.result.optimized_strategy.total_cost) }}</span></div>
+                                            <div>Service Level:<br><span class="font-bold" style="color:#22C0FF">{{ run.result.optimized_strategy.service_level }}%</span></div>
+                                            <div>Optimized Cost:<br><span class="font-bold" style="color:#4E7CFF">${{ "{:,.0f}".format(run.result.optimized_strategy.total_cost) }}</span></div>
                                             <div class="col-span-2">Strategy Status:<br>
-                                                <div class="w-full bg-slate-200 h-2 mt-1">
-                                                    <div class="bg-green-500 h-2" style="width: {{ run.result.optimized_strategy.service_level|default(0)|float }}%"></div>
+                                                <div class="w-full numerro-border h-2 mt-1" style="background-color:#F6F8FC;border-radius:0">
+                                                    <div class="h-2" style="width: {{ run.result.optimized_strategy.service_level|default(0)|float }}%;background-color:#22C0FF;border-radius:0"></div>
                                                 </div>
                                                 <span class="text-xs font-semibold ml-1">
                                                     {% if run.result.optimized_strategy.service_level > 95 %}Optimal{% elif run.result.optimized_strategy.service_level > 90 %}Good{% elif run.result.optimized_strategy.service_level > 80 %}Acceptable{% else %}Needs Improvement{% endif %}
@@ -319,28 +318,28 @@
                                 <div class="mt-4">
                                     <div class="font-semibold text-yellow-700 mb-2 flex items-center"><i class="fas fa-calendar-check mr-2"></i>Purchase Schedule</div>
                                     <div class="overflow-x-auto">
-                                        <table class="min-w-full text-xs border border-yellow-200">
-                                            <thead class="bg-yellow-50">
+                                        <table class="min-w-full text-xs numerro-border" style="border-width:1px; border-radius:0;">
+                                            <thead style="background:rgba(220,118,83,0.1);">
                                                 <tr>
-                                                    <th class="px-2 py-1 text-left text-slate-600">Day</th>
-                                                    <th class="px-2 py-1 text-left text-slate-600">Order Qty</th>
-                                                    <th class="px-2 py-1 text-left text-slate-600">Delivery Day</th>
-                                                    <th class="px-2 py-1 text-left text-slate-600">Status</th>
+                                                    <th class="px-2 py-1 text-left numerro-text-secondary">Day</th>
+                                                    <th class="px-2 py-1 text-left numerro-text-secondary">Order Qty</th>
+                                                    <th class="px-2 py-1 text-left numerro-text-secondary">Delivery Day</th>
+                                                    <th class="px-2 py-1 text-left numerro-text-secondary">Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white">
                                                 {% for day_index in range(run.result.optimized_strategy.purchase_schedule|length) %}
                                                     {% set order = run.result.optimized_strategy.purchase_schedule[day_index] %}
                                                     {% if order.quantity > 0 %}
-                                                    <tr class="bg-yellow-50">
+                                                    <tr style="background:rgba(220,118,83,0.1);">
                                                         <td class="px-2 py-1 font-semibold">{{ day_index + 1 }}</td>
                                                         <td class="px-2 py-1">{{ order.quantity }} units</td>
                                                         <td class="px-2 py-1">
                                                             {% if order.delivery_day is not none %}
-                                                                Day {{ order.delivery_day + 1 }} <span class="text-slate-400">({{ order.delivery_day - day_index }}d lead)</span>
-                                                            {% else %}<span class="text-slate-400">N/A</span>{% endif %}
+                                                                Day {{ order.delivery_day + 1 }} <span class="numerro-text-secondary">({{ order.delivery_day - day_index }}d lead)</span>
+                                                            {% else %}<span class="numerro-text-secondary">N/A</span>{% endif %}
                                                         </td>
-                                                        <td class="px-2 py-1"><span class="text-green-700 font-medium">Order Placed</span></td>
+                                                        <td class="px-2 py-1"><span style="color:#22C0FF;" class="font-medium">Order Placed</span></td>
                                                     </tr>
                                                     {% endif %}
                                                 {% endfor %}
@@ -348,18 +347,18 @@
                                         </table>
                                     </div>
                                     {% if run.result.optimized_strategy.total_orders == 0 %}
-                                    <div class="text-center py-2 text-slate-400 text-xs">No orders needed for this SKU during this iteration</div>
+                                    <div class="text-center py-2 numerro-text-secondary text-xs">No orders needed for this SKU during this iteration</div>
                                     {% endif %}
                                 </div>
                                 <!-- Cost Breakdown -->
                                 <div class="mt-3">
-                                    <div class="font-semibold text-slate-700 mb-2 flex items-center text-xs"><i class="fas fa-cash-register mr-2"></i>Cost Breakdown</div>
+                                    <div class="font-semibold numerro-text-primary mb-2 flex items-center text-xs"><i class="fas fa-cash-register mr-2"></i>Cost Breakdown</div>
                                     <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
-                                        <div>Ordering:<br><span class="font-bold text-blue-700">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.ordering_cost|default(0)) }}</span><br><span class="text-blue-400">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.ordering_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
-                                        <div>Purchase:<br><span class="font-bold text-blue-700">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.purchase_cost|default(0)) }}</span><br><span class="text-blue-400">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.purchase_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
-                                        <div>Holding:<br><span class="font-bold text-green-700">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.holding_cost|default(0)) }}</span><br><span class="text-green-400">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.holding_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
-                                        <div>Stockout:<br><span class="font-bold text-red-700">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.stockout_cost|default(0)) }}</span><br><span class="text-red-400">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.stockout_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
-                                        <div>Waste:<br><span class="font-bold text-yellow-700">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.waste_cost|default(0)) }}</span><br><span class="text-yellow-400">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.waste_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
+                                        <div>Ordering:<br><span class="font-bold" style="color:#4E7CFF;">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.ordering_cost|default(0)) }}</span><br><span style="color:rgba(78,124,255,0.6);">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.ordering_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
+                                        <div>Purchase:<br><span class="font-bold" style="color:#7033FF;">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.purchase_cost|default(0)) }}</span><br><span style="color:rgba(112,51,255,0.6);">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.purchase_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
+                                        <div>Holding:<br><span class="font-bold" style="color:#22C0FF;">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.holding_cost|default(0)) }}</span><br><span style="color:rgba(34,192,255,0.6);">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.holding_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
+                                        <div>Stockout:<br><span class="font-bold" style="color:#F65164;">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.stockout_cost|default(0)) }}</span><br><span style="color:rgba(246,81,100,0.6);">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.stockout_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
+                                        <div>Waste:<br><span class="font-bold" style="color:#DC7653;">${{ "{:,.0f}".format(run.result.optimized_strategy.cost_breakdown.waste_cost|default(0)) }}</span><br><span style="color:rgba(220,118,83,0.6);">{{ "%.1f"|format((run.result.optimized_strategy.cost_breakdown.waste_cost|default(0) / run.result.optimized_strategy.total_cost * 100)|default(0)) }}%</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -367,7 +366,7 @@
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="p-4 text-slate-500 text-sm">No optimization data available for SKU {{ sku }}. Run a simulation to see optimization results.</div>
+                    <div class="p-4 numerro-text-secondary text-sm">No optimization data available for SKU {{ sku }}. Run a simulation to see optimization results.</div>
                     {% endif %}
                 </div>
             {% endfor %}

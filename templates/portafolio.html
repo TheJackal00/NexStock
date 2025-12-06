@@ -7,10 +7,6 @@
 
 {% block main %}
 <style>
-    /* Force absolutely no rounded edges anywhere on this page */
-    * { border-radius: 0 !important; }
-    ::after, ::before { border-radius: 0 !important; }
-<style>
     /* ABSOLUTELY NO ROUNDED EDGES ANYWHERE - HIGHEST PRIORITY */
     * { border-radius: 0 !important; }
     ::after, ::before { border-radius: 0 !important; }
@@ -20,25 +16,25 @@
 </style>
 
     <div class="flex flex-col md:flex-row gap-6 mb-8">
-        <div class="bg-white shadow-sm border border-gray-200 p-6 flex-1">
+        <div class="bg-white shadow-sm numerro-border p-6 flex-1" style="border-radius:0;border-width:1px">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-box text-2xl text-blue-500"></i>
+                    <i class="fas fa-box text-2xl" style="color:#4E7CFF"></i>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total Products</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ products|length if products is iterable else 0 }}</p>
+                    <p class="text-sm font-medium numerro-text-secondary">Total Products</p>
+                    <p class="text-2xl font-semibold numerro-text-primary">{{ products|length if products is iterable else 0 }}</p>
                 </div>
             </div>
         </div>
-        <div class="bg-white shadow-sm border border-gray-200 p-6 flex-1">
+        <div class="bg-white shadow-sm numerro-border p-6 flex-1" style="border-radius:0;border-width:1px">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-tags text-2xl text-green-500"></i>
+                    <i class="fas fa-tags text-2xl" style="color:#7033FF"></i>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Avg Margin</p>
-                    <p class="text-2xl font-semibold text-gray-900">
+                    <p class="text-sm font-medium numerro-text-secondary">Avg Margin</p>
+                    <p class="text-2xl font-semibold numerro-text-primary">
                         {% set ns = namespace(total=0, count=0) %}
                         {% for product in products %}
                             {% if product.MARGIN is not none %}
@@ -55,14 +51,14 @@
                 </div>
             </div>
         </div>
-        <div class="bg-white shadow-sm border border-gray-200 p-6 flex-1">
+        <div class="bg-white shadow-sm numerro-border p-6 flex-1" style="border-radius:0;border-width:1px">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-dollar-sign text-2xl text-yellow-500"></i>
+                    <i class="fas fa-dollar-sign text-2xl" style="color:#DC7653"></i>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Avg Cost</p>
-                    <p class="text-2xl font-semibold text-gray-900">
+                    <p class="text-sm font-medium numerro-text-secondary">Avg Cost</p>
+                    <p class="text-2xl font-semibold numerro-text-primary">
                         {% set ns = namespace(total=0, count=0) %}
                         {% for product in products %}
                             {% if product.COST is not none %}
@@ -79,14 +75,14 @@
                 </div>
             </div>
         </div>
-        <div class="bg-white shadow-sm border border-gray-200 p-6 flex-1">
+        <div class="bg-white shadow-sm numerro-border p-6 flex-1" style="border-radius:0;border-width:1px">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-calendar text-2xl text-red-500"></i>
+                    <i class="fas fa-calendar text-2xl" style="color:#F65164"></i>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Avg Shelf Life</p>
-                    <p class="text-2xl font-semibold text-gray-900">
+                    <p class="text-sm font-medium numerro-text-secondary">Avg Shelf Life</p>
+                    <p class="text-2xl font-semibold numerro-text-primary">
                         {% set ns = namespace(total=0, count=0) %}
                         {% for product in products %}
                             {% if product.EXPIRATION is not none %}
@@ -96,8 +92,7 @@
                         {% endfor %}
                         {% if ns.count > 0 %}
                             {% set avg_exp_days = ns.total / ns.count %}
-                            {% set avg_exp_years = avg_exp_days / 365 %}
-                            {{ "%.1f"|format(avg_exp_years) }} years
+                            {{ "%.0f"|format(avg_exp_days) }} days
                         {% else %}
                             N/A
                         {% endif %}
@@ -108,62 +103,62 @@
     </div>
 
     <!-- NEW TABLE WITH COST, PRICE, MARGIN -->
-    <div class="bg-white shadow-sm border border-gray-200" style="border-radius:0 !important;">
+    <div class="bg-white shadow-sm numerro-border" style="border-radius:0;border-width:1px">
         <div class="p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Product Catalog</h3>
+            <h3 class="text-lg font-medium numerro-text-primary mb-4">Product Catalog</h3>
             
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full divide-y numerro-border" style="border-width:1px">
+                    <thead style="background-color:#F6F8FC">olor:#F6F8FC">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Margin</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shelf Life</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">SKU</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Product Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Cost</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Margin</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium numerro-text-secondary uppercase tracking-wider">Shelf Life</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y numerro-border">
                         {% for product in products %}
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:opacity-90 transition-colors" style="background-color:#FFFFFF">
                             <!-- SKU -->
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-8 w-8 bg-blue-100 flex items-center justify-center" style="border-radius:0 !important;">
-                                        <i class="fas fa-barcode text-blue-600 text-sm"></i>
+                                    <div class="flex-shrink-0 h-8 w-8 flex items-center justify-center" style="border-radius:0;background-color:rgba(78,124,255,0.1)">
+                                        <i class="fas fa-barcode text-sm" style="color:#4E7CFF"></i>
                                     </div>
                                     <div class="ml-3">
-                                        <div class="text-sm font-medium text-gray-900">{{ product.SKU }}</div>
+                                        <div class="text-sm font-medium numerro-text-primary">{{ product.SKU }}</div>
                                     </div>
                                 </div>
                             </td>
                             
                             <!-- Product Name -->
                             <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">{{ product.NAME or 'Unnamed Product' }}</div>
+                                <div class="text-sm font-medium numerro-text-primary">{{ product.NAME or 'Unnamed Product' }}</div>
                             </td>
                             
                             <!-- Cost -->
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm numerro-text-primary">
                                 ${{ "%.2f"|format(product.COST) }}
                             </td>
                             
                             <!-- Price -->
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm numerro-text-primary">
                                 {% set calculated_price = product.COST * (100 / (100 - (product.MARGIN * 100))) %}
                                 ${{ "%.2f"|format(calculated_price) }}
                             </td>
                             
                             <!-- Margin -->
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm numerro-text-primary">
                                 {{ "%.1f"|format(product.MARGIN * 100) }}%
                             </td>
                             
                             <!-- Shelf Life -->
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm numerro-text-primary">
                                 {% if product.EXPIRATION %}
-                                    {{ product.EXPIRATION }} years
+                                    {{ product.EXPIRATION }} days
                                 {% else %}
                                     Not specified
                                 {% endif %}

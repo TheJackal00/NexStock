@@ -40,12 +40,12 @@
 
                     <!-- Lead Time Distribution -->
                     <div>
-                        <label for="lead-time-distribution" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                        <label for="lead-time-distribution" class="block text-xs font-medium numerro-text-secondary uppercase tracking-wide mb-2">
                             Distribution Type
                         </label>
                         <select
                             id="lead-time-distribution"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                            class="w-full px-3 py-2 text-sm numerro-border bg-white" style="border-radius:0;border-width:1px"
                             onchange="updateLeadTimeLabels()"
                         >
                             <option value="normal">Normal</option>
@@ -55,7 +55,7 @@
 
                     <!-- Parameter 1 -->
                     <div>
-                        <label for="lead-time-param1" id="param1-label" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                        <label for="lead-time-param1" id="param1-label" class="block text-xs font-medium numerro-text-secondary uppercase tracking-wide mb-2">
                             Average Lead Time
                         </label>
                         <input
@@ -64,7 +64,7 @@
                             value="7"
                             min="0"
                             step="0.1"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                            class="w-full px-3 py-2 text-sm numerro-border bg-white" style="border-radius:0;border-width:1px"
                         >
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                     <!-- Parameter 2 -->
                     <div>
-                        <label for="lead-time-param2" id="param2-label" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                        <label for="lead-time-param2" id="param2-label" class="block text-xs font-medium numerro-text-secondary uppercase tracking-wide mb-2">
                             Std Deviation
                         </label>
                         <input
@@ -81,13 +81,13 @@
                             value="2"
                             min="0"
                             step="0.1"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                            class="w-full px-3 py-2 text-sm numerro-border bg-white" style="border-radius:0;border-width:1px"
                         >
                     </div>
 
                     <!-- Iterations -->
                     <div>
-                        <label for="num-iterations" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                        <label for="num-iterations" class="block text-xs font-medium numerro-text-secondary uppercase tracking-wide mb-2">
                             Iterations
                         </label>
                         <input
@@ -96,13 +96,13 @@
                             value="10"
                             min="1"
                             max="20"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                            class="w-full px-3 py-2 text-sm numerro-border bg-white" style="border-radius:0;border-width:1px"
                         >
                     </div>
 
                     <!-- Waste Cost Rate -->
                     <div>
-                        <label for="waste-cost-rate" class="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-2">
+                        <label for="waste-cost-rate" class="block text-xs font-medium numerro-text-secondary uppercase tracking-wide mb-2">
                             Waste Cost Rate (%)
                         </label>
                         <input
@@ -112,7 +112,7 @@
                             min="0"
                             max="100"
                             step="1"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" style="border-radius:0"
+                            class="w-full px-3 py-2 text-sm numerro-border bg-white" style="border-radius:0;border-width:1px"
                             title="Percentage of product cost charged as waste when expired"
                         >
                     </div>
@@ -122,7 +122,7 @@
                     <button
                         id="run-button"
                         onclick="runSimulation()"
-                        class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors" style="border-radius:0"
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium text-white hover:opacity-90 transition-colors" style="border-radius:0;background-color:#4E7CFF"
                     >
                         <i class="fas fa-play mr-2 text-xs"></i>
                         Run Simulation
@@ -134,8 +134,8 @@
                     id="loading-spinner"
                     class="mt-4 hidden flex justify-center items-center space-x-2"
                 >
-                    <div class="animate-spin h-5 w-5 border-2 border-slate-600 border-t-transparent" style="border-radius:0"></div>
-                    <span class="text-xs text-slate-600 font-medium">PROCESSING SIMULATION...</span>
+                    <div class="animate-spin h-5 w-5 border-2 border-t-transparent" style="border-radius:0;border-color:#4E7CFF"></div>
+                    <span class="text-xs numerro-text-primary font-medium">PROCESSING SIMULATION...</span>
                 </div>
             </div>
         <!-- Results Container -->
@@ -323,60 +323,62 @@
 
         results.forEach(item => {
             const card = document.createElement('div');
-            card.className = "bg-white border border-slate-200 mb-4";
+            card.className = "bg-white numerro-border mb-4";
+            card.style.borderRadius = "0";
+            card.style.borderWidth = "1px";
 
             card.innerHTML = `
-                <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
+                <div class="px-4 py-3 numerro-border" style="border-bottom-width:1px;background-color:#F6F8FC">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-medium text-slate-800">SKU: ${item.SKU}</h3>
-                        <span class="text-xs text-slate-500">${item.product_name || 'Unknown Product'}</span>
+                        <h3 class="text-sm font-medium numerro-text-primary">SKU: ${item.SKU}</h3>
+                        <span class="text-xs numerro-text-secondary">${item.product_name || 'Unknown Product'}</span>
                     </div>
                 </div>
                 <div class="p-4">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div class="text-center">
-                            <div class="text-xs text-slate-500 uppercase tracking-wide">Initial Stock</div>
-                            <div class="text-sm font-semibold text-slate-800">${Number(item.initial_stock_avg).toFixed(2)}</div>
+                            <div class="text-xs numerro-text-secondary uppercase tracking-wide">Initial Stock</div>
+                            <div class="text-sm font-semibold numerro-text-primary">${Number(item.initial_stock_avg).toFixed(2)}</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-xs text-slate-500 uppercase tracking-wide">Avg Volume</div>
-                            <div class="text-sm font-semibold text-slate-800">${Number(item.a_volume_avg).toFixed(2)}</div>
+                            <div class="text-xs numerro-text-secondary uppercase tracking-wide">Avg Volume</div>
+                            <div class="text-sm font-semibold numerro-text-primary">${Number(item.a_volume_avg).toFixed(2)}</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-xs text-slate-500 uppercase tracking-wide">Vol Std Dev</div>
-                            <div class="text-sm font-semibold text-slate-800">${Number(item.sd_volume_avg).toFixed(2)}</div>
+                            <div class="text-xs numerro-text-secondary uppercase tracking-wide">Vol Std Dev</div>
+                            <div class="text-sm font-semibold numerro-text-primary">${Number(item.sd_volume_avg).toFixed(2)}</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-xs text-slate-500 uppercase tracking-wide">Sim Days</div>
-                            <div class="text-sm font-semibold text-slate-800">${item.simulation_days}</div>
+                            <div class="text-xs numerro-text-secondary uppercase tracking-wide">Sim Days</div>
+                            <div class="text-sm font-semibold numerro-text-primary">${item.simulation_days}</div>
                         </div>
                     </div>
                     
-                    <div class="border-t border-slate-200 pt-4">
+                    <div class="numerro-border pt-4" style="border-top-width:1px">
                         <div class="flex items-center justify-between mb-3">
-                            <h4 class="text-xs font-medium text-slate-600 uppercase tracking-wide">Monte Carlo Results</h4>
-                            <span class="text-xs text-slate-500">${item.num_iterations || 10} iterations</span>
+                            <h4 class="text-xs font-medium numerro-text-secondary uppercase tracking-wide">Monte Carlo Results</h4>
+                            <span class="text-xs numerro-text-secondary">${item.num_iterations || 10} iterations</span>
                         </div>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div class="bg-slate-50 border border-slate-200 p-3 text-center">
-                                <div class="text-xs text-slate-500 uppercase tracking-wide">Min Demand</div>
-                                <div class="text-lg font-bold text-slate-800">${item.min_demand}</div>
+                            <div class="numerro-border p-3 text-center" style="background-color:#F6F8FC;border-width:1px;border-radius:0">
+                                <div class="text-xs numerro-text-secondary uppercase tracking-wide">Min Demand</div>
+                                <div class="text-lg font-bold numerro-text-primary">${item.min_demand}</div>
                             </div>
-                            <div class="bg-slate-50 border border-slate-200 p-3 text-center">
-                                <div class="text-xs text-slate-500 uppercase tracking-wide">Avg Demand</div>
-                                <div class="text-lg font-bold text-slate-800">${typeof item.avg_demand === 'number' ? item.avg_demand.toFixed(1) : 'N/A'}</div>
+                            <div class="numerro-border p-3 text-center" style="background-color:#F6F8FC;border-width:1px;border-radius:0">
+                                <div class="text-xs numerro-text-secondary uppercase tracking-wide">Avg Demand</div>
+                                <div class="text-lg font-bold numerro-text-primary">${typeof item.avg_demand === 'number' ? item.avg_demand.toFixed(1) : 'N/A'}</div>
                             </div>
-                            <div class="bg-slate-50 border border-slate-200 p-3 text-center">
-                                <div class="text-xs text-slate-500 uppercase tracking-wide">Max Demand</div>
-                                <div class="text-lg font-bold text-slate-800">${item.max_demand}</div>
+                            <div class="numerro-border p-3 text-center" style="background-color:#F6F8FC;border-width:1px;border-radius:0">
+                                <div class="text-xs numerro-text-secondary uppercase tracking-wide">Max Demand</div>
+                                <div class="text-lg font-bold numerro-text-primary">${item.max_demand}</div>
                             </div>
-                            <div class="bg-slate-50 border border-slate-200 p-3 text-center">
-                                <div class="text-xs text-slate-500 uppercase tracking-wide">Expires</div>
-                                <div class="text-lg font-bold text-slate-800">${item.expiration_days || 'N/A'}</div>
+                            <div class="numerro-border p-3 text-center" style="background-color:#F6F8FC;border-width:1px;border-radius:0">
+                                <div class="text-xs numerro-text-secondary uppercase tracking-wide">Expires</div>
+                                <div class="text-lg font-bold numerro-text-primary">${item.expiration_days || 'N/A'}</div>
                             </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                    <div class="grid grid-cols-2 gap-4 p-4 numerro-border" style="background-color:rgba(220,118,83,0.1);border-radius:0;border-width:1px;border-color:#DC7653">
                         <div class="text-center border-r border-orange-300">
                             <div class="text-sm text-orange-600">Total Waste Cost</div>
                             <div class="font-bold text-orange-800">$${(item.total_waste_cost || 0).toFixed(2)}</div>
@@ -395,10 +397,10 @@
     function showError(message) {
         const resultsContainer = document.getElementById('results-container');
         resultsContainer.innerHTML = `
-            <div class="bg-red-50 border border-red-200 p-4">
+            <div class="numerro-border p-4" style="background-color:rgba(246,81,100,0.1);border-radius:0;border-width:1px;border-color:#F65164">
                 <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
-                    <p class="text-sm text-red-700 font-medium">${message}</p>
+                    <i class="fas fa-exclamation-triangle mr-2" style="color:#F65164"></i>
+                    <p class="text-sm font-medium" style="color:#F65164">${message}</p>
                 </div>
             </div>
         `;
@@ -408,7 +410,10 @@
         const resultsContainer = document.getElementById('results-container');
         // Create the success message div
         const successDiv = document.createElement('div');
-        successDiv.className = "bg-slate-50 border border-slate-200 p-4 mb-4";
+        successDiv.className = "numerro-border p-4 mb-4";
+        successDiv.style.backgroundColor = "#F6F8FC";
+        successDiv.style.borderRadius = "0";
+        successDiv.style.borderWidth = "1px";
         
         // Number of simulated days and iterations
         const numDays = parseInt(document.getElementById('num-simulations').value, 10);
@@ -417,10 +422,10 @@
         successDiv.innerHTML = `
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
-                    <p class="text-sm text-slate-700 font-medium">${message}</p>
+                    <i class="fas fa-check-circle mr-2" style="color:#22C0FF"></i>
+                    <p class="text-sm numerro-text-primary font-medium">${message}</p>
                 </div>
-                <div class="text-xs text-slate-500">
+                <div class="text-xs numerro-text-secondary">
                     ${totalRecords} SKUs • ${numDays} days • ${numIterations} iterations
                 </div>
             </div>
