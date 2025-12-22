@@ -154,16 +154,18 @@
         <div id="sidebar-backdrop"></div>
         
         <!-- Sidebar -->
-    <div id="sidebar" class="bg-white w-64 md:w-64 min-h-screen shadow-lg sidebar-transition flex flex-col" style="border-radius:0">
+    <div id="sidebar" class="bg-white w-64 md:w-64 min-h-screen shadow-lg sidebar-transition flex flex-col border-r numerro-border" style="border-radius:0">
             <!-- Logo -->
             <div class="p-6 border-b border-gray-200" style="border-radius:0">
-                <div class="flex items-center space-x-3">
-                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="NexStock Logo" class="w-10 h-10">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-800">NexStock</h1>
-                        <p class="text-sm text-slate-500">Inventory Management</p>
+                <a href="/" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                    <div class="w-10 h-10 flex items-center justify-center" style="background-color: #4E7CFF; border-radius: 0;">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="NexStock Logo" class="w-7 h-7" style="filter: brightness(0) invert(1);">
                     </div>
-                </div>
+                    <div>
+                        <h1 class="text-2xl font-bold" style="color: #252423;">NexStock</h1>
+                        <p class="text-sm" style="color: #22C0FF;">Inventory Management</p>
+                    </div>
+                </a>
             </div>
             
             <!-- Navigation -->
@@ -196,9 +198,9 @@
                         <i class="fas fa-chart-bar w-5 h-5 mr-3 numerro-text-secondary"></i>
                         Analytics
                     </a>
-                    <a href="/simulate" class="flex items-center px-3 py-2.5 text-sm font-medium numerro-text-primary hover:bg-slate-100 transition-colors group" style="border-radius:0">
-                        <i class="fas fa-play-circle w-5 h-5 mr-3 numerro-text-secondary"></i>
-                        Simulation
+                    <a href="/forecast" class="flex items-center px-3 py-2.5 text-sm font-medium numerro-text-primary hover:bg-slate-100 transition-colors group" style="border-radius:0">
+                        <i class="fas fa-brain w-5 h-5 mr-3 numerro-text-secondary"></i>
+                        Forecast
                     </a>
                     <a href="/optimize" class="flex items-center px-3 py-2.5 text-sm font-medium numerro-text-primary hover:bg-slate-100 transition-colors group" style="border-radius:0">
                         <i class="fas fa-cogs w-5 h-5 mr-3 numerro-text-secondary"></i>
@@ -246,7 +248,7 @@
                             <i class="fas fa-bars numerro-text-primary text-lg"></i>
                         </button>
                         <div class="min-w-0 flex-1">
-                            <h2 class="text-base md:text-lg font-semibold numerro-text-primary truncate">{% block page_title %}Dashboard{% endblock %}</h2>
+                            <h2 class="text-xl md:text-2xl font-semibold numerro-text-primary truncate">{% block page_title %}Dashboard{% endblock %}</h2>
                             <p class="text-xs md:text-sm numerro-text-secondary hidden sm:block truncate">{% block page_description %}Main Control Panel{% endblock %}</p>
                         </div>
                     </div>
@@ -332,5 +334,8 @@
             });
         });
     </script>
+    
+    <!-- Page-specific scripts -->
+    {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -35,6 +35,7 @@ from pulp import LpProblem, LpVariable, LpMinimize, lpSum, LpInteger
 import functools
 import threading
 import time
+from ml_demand_forecast import DemandForecaster
 # ...existing code (all other imports remain here, after Flask import)...
 
 app = Flask(__name__)
@@ -46,6 +47,28 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-i
 # Development configuration for template reloading
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+# Custom Jinja filters for date formatting
+from datetime import datetime, timedelta
+
+@app.template_filter('timestamp_to_date')
+def timestamp_to_date_filter(timestamp, format='%b %d, %Y'):
+    """Convert Unix timestamp to formatted date string"""
+    try:
+        dt = datetime.fromtimestamp(timestamp)
+        return dt.strftime(format)
+    except:
+        return 'N/A'
+
+@app.template_filter('add_days')
+def add_days_filter(date_str, days):
+    """Add days to a date string and return formatted date"""
+    try:
+        dt = datetime.strptime(date_str, '%Y-%m-%d')
+        new_dt = dt + timedelta(days=int(days))
+        return new_dt.strftime('%b %d, %Y')
+    except:
+        return 'N/A'
 
 # NexStock - Advanced Inventory Management System
 # Version: 2.0.0 - Updated with GitHub integration
@@ -247,6 +270,34 @@ def init_db():
                 NOT_BILLED REAL,
                 COO REAL,
                 Iteration INTEGER,
+                FOREIGN KEY (SKU) REFERENCES products (SKU)
+            )
+        """)
+        
+        # Create economic data table for ML forecasting
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS ECONOMIC_DATA (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                DATE TEXT NOT NULL,
+                INDICATOR TEXT NOT NULL,
+                VALUE REAL,
+                CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),
+                UNIQUE(DATE, INDICATOR)
+            )
+        """)
+        
+        # Create forecast table for ML predictions
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS forecast (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                SKU TEXT NOT NULL,
+                DAY INTEGER NOT NULL,
+                PREDICTED_DEMAND REAL NOT NULL,
+                CONFIDENCE REAL,
+                DATE TEXT NOT NULL,
+                FORECAST_HORIZON INTEGER,
+                MODEL_VERSION TEXT,
+                CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),
                 FOREIGN KEY (SKU) REFERENCES products (SKU)
             )
         """)
@@ -716,80 +767,11 @@ def test_xyz():
     return "Test XYZ works!"
 
 
-@app.route("/simulate", methods=["GET"])
-def simulation():
-    """Renders the simulation page and loads existing simulation data if available."""
-    
-    # Check if there's existing simulation data
-    existing_data = None
-    try:
-        # Check if simulation table has data
-        sim_count = execute_query("SELECT COUNT(*) as count FROM simulation")
-        if sim_count and sim_count[0]['count'] > 0:
-            # Get the most recent simulation parameters and results
-            # We'll reconstruct a basic results structure from the simulation table
-            sim_data = execute_query("""
-                SELECT DISTINCT SKU 
-                FROM simulation 
-                ORDER BY SKU
-            """)
-            
-            if sim_data:
-                # Create a simplified results structure for display
-                results = []
-                for sku_row in sim_data:
-                    sku = sku_row['SKU']
-                    
-                    # Get basic stats for this SKU from simulation data
-                    sku_stats = execute_query("""
-                        SELECT 
-                            AVG(DEMAND) as avg_demand,
-                            MIN(DEMAND) as min_demand,
-                            MAX(DEMAND) as max_demand,
-                            AVG(STOCK) as avg_stock,
-                            MIN(STOCK) as min_stock,
-                            MAX(STOCK) as max_stock,
-                            AVG(LEAD_TIME) as avg_lead_time,
-                            SUM(NOT_BILLED) as total_not_billed
-                        FROM simulation 
-                        WHERE SKU = ?
-                    """, sku)
-                    
-                    if sku_stats:
-                        stats = sku_stats[0]
-                        # Get product name
-                        product_info = execute_query("SELECT NAME FROM products WHERE SKU = ?", sku)
-                        product_name = product_info[0]['NAME'] if product_info else f"Product {sku}"
-                        
-                        results.append({
-                            "sku": sku,
-                            "product_name": product_name,
-                            "mean_demand": round(float(stats['avg_demand'] or 0), 1),
-                            "min_demand": int(stats['min_demand'] or 0),
-                            "max_demand": int(stats['max_demand'] or 0),
-                            "mean_stock": round(float(stats['avg_stock'] or 0), 1),
-                            "min_stock": round(float(stats['min_stock'] or 0), 1),
-                            "max_stock": round(float(stats['max_stock'] or 0), 1),
-                            "avg_lead_time": round(float(stats['avg_lead_time'] or 0), 1),
-                            "total_unfulfilled": round(float(stats['total_not_billed'] or 0), 1),
-                            "days_negative_avg": 0  # This would require more complex calculation
-                        })
-                
-                if results:
-                    existing_data = {
-                        "status": "success",
-                        "message": f"Loaded existing simulation data for {len(results)} SKUs",
-                        "results": results,
-                        "simulation_size": 30,  # Default values since we don't store these
-                        "lead_time_distribution": "normal",
-                        "num_iterations": 1
-                    }
-                    
-    except Exception as e:
-        print(f"Error loading existing simulation data: {e}")
-        existing_data = None
-    
-    response = make_response(render_template("simulate.html", existing_data=existing_data))
+@app.route("/forecast", methods=["GET"])
+def forecast():
+    """Renders the ML forecast page"""
+    import time
+    response = make_response(render_template("forecast.html", cache_buster=int(time.time())))
     # Add cache-busting headers
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
@@ -1426,22 +1408,21 @@ def optimization():
     print(f"DEBUG: /optimize route called, method={request.method}", flush=True)
     # For GET requests, simply show the page with the button
     if request.method == "GET":
-        # Check if simulation data exists
+        # Check if forecast data exists
         try:
-            sim_count = execute_query("SELECT COUNT(*) as count FROM simulation")
-            print(f"GET /optimize: Found {sim_count[0]['count']} simulation records", flush=True)
-            if sim_count[0]['count'] == 0:
-                return render_template("optimize.html", error="No simulation data found. Please run a simulation first.", all_optimizations={})
+            forecast_count = execute_query("SELECT COUNT(*) as count FROM forecast")
+            print(f"GET /optimize: Found {forecast_count[0]['count']} forecast records", flush=True)
+            if forecast_count[0]['count'] == 0:
+                return render_template("optimize.html", error="No forecast data found. Please run ML forecast first.", all_optimizations={}, summary={})
             else:
                 # Show some info about available data
-                skus_with_data = execute_query("SELECT DISTINCT SKU FROM simulation")
-                iterations = execute_query("SELECT DISTINCT Iteration FROM simulation ORDER BY Iteration DESC LIMIT 3")
-                print(f"GET /optimize: Available SKUs: {[s['SKU'] for s in skus_with_data]}, Recent iterations: {[i['Iteration'] for i in iterations]}", flush=True)
+                skus_with_data = execute_query("SELECT DISTINCT SKU FROM forecast")
+                print(f"GET /optimize: Available SKUs: {[s['SKU'] for s in skus_with_data]}", flush=True)
         except Exception as e:
             print(f"GET /optimize: Database error: {e}", flush=True)
-            return render_template("optimize.html", error=f"Database error: {str(e)}", all_optimizations={})
+            return render_template("optimize.html", error=f"Database error: {str(e)}", all_optimizations={}, summary={})
         
-        response = make_response(render_template("optimize.html", all_optimizations={}))
+        response = make_response(render_template("optimize.html", all_optimizations={}, summary={}))
         # Add cache-busting headers
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         response.headers['Pragma'] = 'no-cache'
@@ -1453,11 +1434,12 @@ def optimization():
         print("DEBUG: /optimize POST reached (very top of handler)", flush=True)
         print("POST /optimize: Starting optimization process...", flush=True)
         # Get parameters from form or use defaults
+        forecast_days = int(request.form.get('forecast_days', 90))  # User-selected horizon
         shipping_cost = float(request.form.get('shipping_cost', 100))  # Fixed cost per shipment
         holding_cost_rate = float(request.form.get('holding_cost_rate', 1)) / 100  # Convert percentage to decimal
         stockout_penalty_multiplier = float(request.form.get('stockout_penalty', 2.0))  # Multiplier over margin to penalize stockouts
         
-        print(f"POST /optimize: Parameters - shipping_cost={shipping_cost}, holding_cost_rate={holding_cost_rate}, stockout_penalty={stockout_penalty_multiplier}", flush=True)
+        print(f"POST /optimize: Parameters - forecast_days={forecast_days}, shipping_cost={shipping_cost}, holding_cost_rate={holding_cost_rate}, stockout_penalty={stockout_penalty_multiplier}", flush=True)
 
         # Get product info safely
         products = execute_query("SELECT SKU, NAME, MARGIN, COST FROM products")
@@ -1472,60 +1454,101 @@ def optimization():
         # Prepare results structure
         all_optimizations = {}
 
-        # Get the maximum iteration number from the database
-        max_iteration_result = execute_query("SELECT MAX(Iteration) as max_iter FROM simulation")
-        max_iterations = max_iteration_result[0]['max_iter'] if max_iteration_result and max_iteration_result[0]['max_iter'] else 10
-
         for sku in all_skus:
-            all_optimizations[sku] = []
-            for iteration in range(1, max_iterations + 1):
-                # Get simulation data for this SKU and iteration
-                sim_rows = execute_query(
-                    "SELECT * FROM simulation WHERE SKU = ? AND Iteration = ?",
-                    sku, iteration
-                )
-                if not sim_rows:
-                    print(f"No simulation data found for SKU {sku}, iteration {iteration}", flush=True)
-                    continue
+            # Get forecast data for this SKU
+            forecast_rows = execute_query(
+                "SELECT * FROM forecast WHERE SKU = ? ORDER BY DAY",
+                sku
+            )
+            if not forecast_rows:
+                print(f"No forecast data found for SKU {sku}", flush=True)
+                continue
 
-                demands = [int(row['DEMAND']) for row in sim_rows]
-                lead_times = [int(row['LEAD_TIME']) for row in sim_rows]
-                initial_stock = float(sim_rows[0]['STOCK']) + int(sim_rows[0]['DEMAND']) if sim_rows else 0
+            # Limit to user-selected forecast days
+            demands = [float(row['PREDICTED_DEMAND']) for row in forecast_rows[:forecast_days]]
+            simulation_days = len(demands)
+            
+            # Use default lead time (can be enhanced later)
+            avg_lead_time = 7
+            lead_times = [avg_lead_time] * simulation_days
+            
+            # Get initial stock
+            stock_result = execute_query("SELECT COALESCE(SUM(VOLUME), 0) as total FROM inventory WHERE SKU = ?", sku)
+            initial_stock = float(stock_result[0]['total']) if stock_result else 0
 
-                unit_cost = float(product_info[sku].get('COST', 10))
-                margin = float(product_info[sku].get('MARGIN', 0))
-                expiration_days = int(product_info[sku].get('EXPIRATION', 365))
+            unit_cost = float(product_info[sku].get('COST', 10))
+            margin = float(product_info[sku].get('MARGIN', 0))
+            expiration_days = int(product_info[sku].get('EXPIRATION', 365))
+            product_name = str(product_info[sku].get('NAME', 'Unknown'))
 
-                # Run optimization for this iteration
-                result = optimize_purchase_schedule(
-                    sku=sku,
-                    demands=demands,
-                    lead_times=lead_times,
-                    initial_stock=initial_stock,
-                    unit_cost=unit_cost,
-                    margin=margin,
-                    shipping_cost=shipping_cost,
-                    holding_cost_rate=holding_cost_rate,
-                    stockout_penalty_multiplier=stockout_penalty_multiplier,
-                    simulation_days=len(demands),
-                    expiration_days=expiration_days,
-                    waste_cost_rate=80.0  # Default waste cost rate for optimization
-                )
-                # Store result for this iteration
-                all_optimizations[sku].append({
-                    "iteration": iteration,
-                    "result": result
-                })
+            # Run optimization for this SKU
+            result = optimize_purchase_schedule(
+                sku=sku,
+                demands=demands,
+                lead_times=lead_times,
+                initial_stock=initial_stock,
+                unit_cost=unit_cost,
+                margin=margin,
+                shipping_cost=shipping_cost,
+                holding_cost_rate=holding_cost_rate,
+                stockout_penalty_multiplier=stockout_penalty_multiplier,
+                simulation_days=len(demands),
+                expiration_days=expiration_days,
+                waste_cost_rate=80.0  # Default waste cost rate for optimization
+            )
+            
+            # Update product name in result
+            result['product_name'] = product_name
+            
+            # Store result for this SKU - wrap in iteration structure expected by template
+            all_optimizations[sku] = [{
+                'iteration': 1,
+                'result': result
+            }]
+            
+            print(f"DEBUG: Stored result for SKU {sku}, type: {type(all_optimizations[sku])}, content: {type(all_optimizations[sku][0])}", flush=True)
 
         # Check if we have any optimization results
-        total_optimizations = sum(len(runs) for runs in all_optimizations.values())
-        if total_optimizations == 0:
-            return render_template("optimize.html", error="No optimization results generated. This could mean no simulation data was found or all simulations failed. Please run a new simulation first.")
+        if not all_optimizations:
+            return render_template("optimize.html", error="No optimization results generated. Please run ML forecast first.", all_optimizations={}, summary={})
 
-        # Calculate metrics for summary using AVERAGE per iteration, not total sum
-        # Since you would only implement ONE strategy, not all iterations
+        # Save optimization results to database (truncate and repopulate)
+        from datetime import datetime
+        run_timestamp = datetime.now().isoformat()
+        
+        try:
+            # Truncate existing results
+            execute_query("DELETE FROM optimization_results")
+            
+            # Insert new results
+            for sku, result_list in all_optimizations.items():
+                result = result_list[0]['result']  # Get the first iteration
+                opt_strategy = result['optimized_strategy']
+                
+                # Insert one row per day in the purchase schedule
+                for order in opt_strategy['purchase_schedule']:
+                    execute_query(
+                        '''INSERT INTO optimization_results 
+                           (run_timestamp, sku, day, order_quantity, delivery_day, 
+                            total_cost, total_orders, service_level, average_inventory, 
+                            stockout_days, cost_breakdown, forecast_days, shipping_cost, 
+                            holding_cost_rate, stockout_penalty)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                        run_timestamp, sku, order['day'], order.get('quantity', 0), 
+                        order.get('delivery_day'), opt_strategy['total_cost'], 
+                        opt_strategy['total_orders'], opt_strategy['service_level'],
+                        opt_strategy['average_inventory'], opt_strategy['stockout_days'],
+                        str(opt_strategy['cost_breakdown']), forecast_days,
+                        shipping_cost, holding_cost_rate, stockout_penalty_multiplier
+                    )
+            
+            print(f"✅ Saved optimization results to database (timestamp: {run_timestamp})", flush=True)
+        except Exception as e:
+            print(f"⚠️  Warning: Could not save optimization results to database: {e}", flush=True)
+
+        # Calculate summary metrics
         total_service_level = 0
-        total_iterations = 0
+        total_cost = 0
         total_savings = 0
         
         # Initialize cost accumulators
@@ -1537,47 +1560,26 @@ def optimization():
             'waste_cost': 0,
             'total_cost': 0
         }
-
-        # Collect costs per iteration to then average
-        iteration_costs = {}
         
-        for runs in all_optimizations.values():
-            for run in runs:
-                iteration = run['iteration']
-                if iteration not in iteration_costs:
-                    iteration_costs[iteration] = {
-                        'ordering_cost': 0,
-                        'purchase_cost': 0,
-                        'holding_cost': 0,
-                        'stockout_cost': 0,
-                        'waste_cost': 0,
-                        'total_cost': 0,
-                        'service_level': 0,
-                        'sku_count': 0
-                    }
-                
-                total_service_level += run['result']['optimized_strategy']['service_level']
-                total_iterations += 1
-                
-                # Accumulate costs per iteration (sum of all SKUs in this iteration)
-                breakdown = run['result']['optimized_strategy']['cost_breakdown']
-                iteration_costs[iteration]['ordering_cost'] += breakdown.get('ordering_cost', 0)
-                iteration_costs[iteration]['purchase_cost'] += breakdown.get('purchase_cost', 0)
-                iteration_costs[iteration]['holding_cost'] += breakdown.get('holding_cost', 0)
-                iteration_costs[iteration]['stockout_cost'] += breakdown.get('stockout_cost', 0)
-                iteration_costs[iteration]['waste_cost'] += breakdown.get('waste_cost', 0)
-                iteration_costs[iteration]['total_cost'] += run['result']['optimized_strategy']['total_cost']
-                iteration_costs[iteration]['service_level'] += run['result']['optimized_strategy']['service_level']
-                iteration_costs[iteration]['sku_count'] += 1
-                
-        # Calculate average costs between iterations (cost of implementing ONE complete strategy)
-        num_iterations = len(iteration_costs)
-        if num_iterations > 0:
-            for cost_type in total_costs.keys():
-                total_costs[cost_type] = sum(iter_cost[cost_type] for iter_cost in iteration_costs.values()) / num_iterations
+        for sku, result_list in all_optimizations.items():
+            result = result_list[0]['result']  # Get the first (and only) iteration
+            total_service_level += result['optimized_strategy']['service_level']
             
-            # Calculate savings based on average purchase cost
-            total_savings = total_costs['purchase_cost'] * 0.1
+            # Accumulate costs
+            breakdown = result['optimized_strategy']['cost_breakdown']
+            total_costs['ordering_cost'] += breakdown.get('ordering_cost', 0)
+            total_costs['purchase_cost'] += breakdown.get('purchase_cost', 0)
+            total_costs['holding_cost'] += breakdown.get('holding_cost', 0)
+            total_costs['stockout_cost'] += breakdown.get('stockout_cost', 0)
+            total_costs['waste_cost'] += breakdown.get('waste_cost', 0)
+            total_costs['total_cost'] += result['optimized_strategy']['total_cost']
+        
+        # Calculate averages
+        num_skus = len(all_optimizations)
+        avg_service_level = total_service_level / num_skus if num_skus > 0 else 0
+        
+        # Estimate savings (10% of purchase cost as baseline)
+        total_savings = total_costs['purchase_cost'] * 0.1
 
         # Calculate percentages of each cost type
         cost_percentages = {}
@@ -1586,112 +1588,21 @@ def optimization():
                 if cost_type != 'total_cost':
                     cost_percentages[cost_type] = (amount / total_costs['total_cost']) * 100
 
-        # Calculate per-SKU cost breakdowns for filtering
-        sku_cost_breakdowns = {}
-        for sku, runs in all_optimizations.items():
-            if runs:
-                sku_iteration_costs = {}
-                for run in runs:
-                    iteration = run['iteration']
-                    breakdown = run['result']['optimized_strategy']['cost_breakdown']
-                    
-                    if iteration not in sku_iteration_costs:
-                        sku_iteration_costs[iteration] = {
-                            'ordering_cost': 0,
-                            'purchase_cost': 0,
-                            'holding_cost': 0,
-                            'stockout_cost': 0,
-                            'waste_cost': 0,
-                            'total_cost': 0
-                        }
-                    
-                    # Add costs for this iteration
-                    sku_iteration_costs[iteration]['ordering_cost'] += breakdown.get('ordering_cost', 0)
-                    sku_iteration_costs[iteration]['purchase_cost'] += breakdown.get('purchase_cost', 0)
-                    sku_iteration_costs[iteration]['holding_cost'] += breakdown.get('holding_cost', 0)
-                    sku_iteration_costs[iteration]['stockout_cost'] += breakdown.get('stockout_cost', 0)
-                    sku_iteration_costs[iteration]['waste_cost'] += breakdown.get('waste_cost', 0)
-                    sku_iteration_costs[iteration]['total_cost'] += run['result']['optimized_strategy']['total_cost']
-                
-                # Average costs across iterations for this SKU
-                num_sku_iterations = len(sku_iteration_costs)
-                if num_sku_iterations > 0:
-                    sku_avg_costs = {
-                        'ordering_cost': sum(iter_cost['ordering_cost'] for iter_cost in sku_iteration_costs.values()) / num_sku_iterations,
-                        'purchase_cost': sum(iter_cost['purchase_cost'] for iter_cost in sku_iteration_costs.values()) / num_sku_iterations,
-                        'holding_cost': sum(iter_cost['holding_cost'] for iter_cost in sku_iteration_costs.values()) / num_sku_iterations,
-                        'stockout_cost': sum(iter_cost['stockout_cost'] for iter_cost in sku_iteration_costs.values()) / num_sku_iterations,
-                        'waste_cost': sum(iter_cost['waste_cost'] for iter_cost in sku_iteration_costs.values()) / num_sku_iterations,
-                        'total_cost': sum(iter_cost['total_cost'] for iter_cost in sku_iteration_costs.values()) / num_sku_iterations
-                    }
-                    
-                    # Calculate percentages for this SKU
-                    sku_percentages = {}
-                    if sku_avg_costs['total_cost'] > 0:
-                        for cost_type, amount in sku_avg_costs.items():
-                            if cost_type != 'total_cost':
-                                sku_percentages[cost_type] = (amount / sku_avg_costs['total_cost']) * 100
-                    
-                    sku_cost_breakdowns[sku] = {
-                        'cost_breakdown': sku_avg_costs,
-                        'cost_percentages': sku_percentages,
-                        'iterations': num_sku_iterations
-                    }
-
-        # Get all available SKUs from products table for the filter dropdown
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT SKU FROM products ORDER BY CAST(SKU AS INTEGER)")
-            all_available_skus = [row[0] for row in cursor.fetchall()]
-            conn.close()
-        except Exception as e:
-            print(f"Error fetching SKUs from products table: {e}")
-            all_available_skus = list(sku_cost_breakdowns.keys())  # Fallback to optimization results
-
-        # For SKUs without optimization data, create empty cost breakdowns
-        for sku in all_available_skus:
-            if sku not in sku_cost_breakdowns:
-                sku_cost_breakdowns[sku] = {
-                    'cost_breakdown': {
-                        'ordering_cost': 0,
-                        'purchase_cost': 0,
-                        'holding_cost': 0,
-                        'stockout_cost': 0,
-                        'waste_cost': 0,
-                        'total_cost': 0
-                    },
-                    'cost_percentages': {
-                        'ordering_cost': 0,
-                        'purchase_cost': 0,
-                        'holding_cost': 0,
-                        'stockout_cost': 0,
-                        'waste_cost': 0
-                    },
-                    'iterations': 0
-                }
-
-        # Create the summary with average costs per implemented strategy
+        # Create summary
         summary = {
-            "total_skus": len([sku for sku, runs in all_optimizations.items() if runs]),
-            "simulation_days": len(next(iter(all_optimizations.values()))[0]['result']['optimized_strategy']['purchase_schedule']) if all_optimizations else 0,
+            "total_skus": num_skus,
+            "simulation_days": forecast_days,
             "optimized_total_cost": total_costs['total_cost'],
-            "avg_service_level": total_service_level / total_iterations if total_iterations > 0 else 0,
+            "avg_service_level": avg_service_level,
             "total_savings": total_savings,
             "cost_breakdown": total_costs,
-            "cost_percentages": cost_percentages,
-            "total_iterations": total_iterations,
-            "num_strategy_iterations": num_iterations,  # Number of complete strategies analyzed
-            "is_average_cost": True  # Flag to indicate that these are average costs, not totals
+            "cost_percentages": cost_percentages
         }
-
 
         return render_template(
             "optimize.html",
             all_optimizations=all_optimizations,
             summary=summary,
-            sku_cost_breakdowns=sku_cost_breakdowns,
-            all_available_skus=all_available_skus,
             results=all_optimizations
         )
 
@@ -1699,7 +1610,7 @@ def optimization():
         print(f"Optimization error: {str(e)}", flush=True)
         import traceback
         traceback.print_exc()
-        return render_template("optimize.html", error=f"Error optimizing purchase schedule: {str(e)}")
+        return render_template("optimize.html", error=f"Error optimizing purchase schedule: {str(e)}", all_optimizations={}, summary={})
 
 
 def optimize_purchase_schedule(sku, demands, lead_times, initial_stock, unit_cost, margin,
@@ -1815,33 +1726,33 @@ def optimize_purchase_schedule(sku, demands, lead_times, initial_stock, unit_cos
         })
     
     # Analyze optimized strategy performance
-    stockout_days = sum(1 for t in periods if s[t].value() > 0)
-    service_level = 100 * (1 - stockout_days / len(periods))
+    stockout_days = sum(1 for t in periods if s[t].value() is not None and s[t].value() > 0)
+    service_level = 100 * (1 - stockout_days / len(periods)) if len(periods) > 0 else 0
     
-    # Calculate detailed costs
-    ordering_cost = sum(shipping_cost * y[t].value() for t in periods)
-    purchase_cost = sum(unit_cost * x[t].value() for t in periods)
-    holding_cost = sum(unit_cost * holding_cost_rate * i[t].value() for t in periods)
-    stockout_cost_total = sum(stockout_cost * s[t].value() for t in periods)
-    waste_cost_total = sum(waste_cost_per_unit * w[t].value() for t in periods)
+    # Calculate detailed costs (handle None values)
+    ordering_cost = sum(shipping_cost * (y[t].value() or 0) for t in periods)
+    purchase_cost = sum(unit_cost * (x[t].value() or 0) for t in periods)
+    holding_cost = sum(unit_cost * holding_cost_rate * (i[t].value() or 0) for t in periods)
+    stockout_cost_total = sum(stockout_cost * (s[t].value() or 0) for t in periods)
+    waste_cost_total = sum(waste_cost_per_unit * (w[t].value() or 0) for t in periods)
     
     return {
         'sku': sku,
         'product_name': 'Product',  # You can get this data from the database
         'optimized_strategy': {
             'purchase_schedule': purchase_schedule,
-            'total_cost': ordering_cost + purchase_cost + holding_cost + stockout_cost_total + waste_cost_total,
-            'service_level': service_level,
+            'total_cost': float(ordering_cost + purchase_cost + holding_cost + stockout_cost_total + waste_cost_total),
+            'service_level': float(service_level),
             'total_orders': sum(1 for day in purchase_schedule if day['quantity'] > 0),
-            'total_quantity_ordered': sum(day['quantity'] for day in purchase_schedule),
-            'average_inventory': sum(i[t].value() for t in periods) / len(periods),
-            'stockout_days': stockout_days,
+            'total_quantity_ordered': float(sum(day['quantity'] for day in purchase_schedule)),
+            'average_inventory': float(sum((i[t].value() or 0) for t in periods) / len(periods)) if len(periods) > 0 else 0.0,
+            'stockout_days': int(stockout_days),
             'cost_breakdown': {
-                'ordering_cost': ordering_cost,
-                'purchase_cost': purchase_cost,
-                'holding_cost': holding_cost,
-                'stockout_cost': stockout_cost_total,
-                'waste_cost': waste_cost_total
+                'ordering_cost': float(ordering_cost),
+                'purchase_cost': float(purchase_cost),
+                'holding_cost': float(holding_cost),
+                'stockout_cost': float(stockout_cost_total),
+                'waste_cost': float(waste_cost_total)
             }
         }
     }
@@ -2125,118 +2036,111 @@ def calculate_current_performance(demands, initial_stock, margin):
 
 @app.route("/results", methods=["GET", "POST"])
 def results():
+    print(f"DEBUG /results: method={request.method}, form={request.form}", flush=True)
+    
     # Get product information
     products = execute_query("SELECT SKU, NAME, MARGIN, COST FROM products")
     product_info = {}
     for prod in products:
-        # Use the safe function to get complete product info including EXPIRATION
         product_info[str(prod['SKU'])] = get_product_info_safe(prod['SKU'])
     all_skus = [str(prod['SKU']) for prod in products]
 
     # Check if user clicked "Show solution" button
     if request.method == "POST" and request.form.get('action') == 'show_solution':
-        # --- REBUILD best_strategies same as in /optimize ---
-        # Get the maximum iteration number from the database
-        max_iteration_result = execute_query("SELECT MAX(Iteration) as max_iter FROM simulation")
-        max_iterations = max_iteration_result[0]['max_iter'] if max_iteration_result and max_iteration_result[0]['max_iter'] else 10
-
-        best_strategies = {}
-        for sku in all_skus:
-            # Get all available simulations for this SKU
-            scenarios = []
-            strategies = []
-            for iteration in range(1, max_iterations + 1):
-                sim_rows = execute_query(
-                    "SELECT * FROM simulation WHERE SKU = ? AND Iteration = ?",
-                    sku, iteration
+        print("DEBUG /results: Show solution button clicked", flush=True)
+        # Read optimization results from database (saved by /optimize route)
+        try:
+            # Check if we have any optimization results
+            count_check = execute_query("SELECT COUNT(*) as count FROM optimization_results")
+            if not count_check or count_check[0]['count'] == 0:
+                return render_template(
+                    "results.html",
+                    error="No optimization results found. Please run optimization first from /optimize page.",
+                    best_strategies={},
+                    product_info=product_info,
+                    sku_list=[],
+                    calendar_matrix=[],
+                    show_solution=False
                 )
-                if not sim_rows:
+            
+            # Get all results from the latest run
+            results_rows = execute_query(
+                "SELECT * FROM optimization_results ORDER BY sku, day"
+            )
+            
+            # Group by SKU
+            best_strategies = {}
+            for sku in all_skus:
+                sku_rows = [r for r in results_rows if r['sku'] == sku]
+                if not sku_rows:
+                    best_strategies[sku] = None
                     continue
-                demands = [int(row['DEMAND']) for row in sim_rows]
-                lead_times = [int(row['LEAD_TIME']) for row in sim_rows]
-                initial_stock = float(sim_rows[0]['STOCK']) + int(sim_rows[0]['DEMAND']) if sim_rows else 0
-                unit_cost = float(product_info[sku].get('COST', 10))
-                margin = float(product_info[sku].get('MARGIN', 0))
-                expiration_days = int(product_info[sku].get('EXPIRATION', 365))
-                result = optimize_purchase_schedule(
-                    sku=sku,
-                    demands=demands,
-                    lead_times=lead_times,
-                    initial_stock=initial_stock,
-                    unit_cost=unit_cost,
-                    margin=margin,
-                    shipping_cost=100,
-                    holding_cost_rate=0.02,
-                    stockout_penalty_multiplier=2.0,
-                    simulation_days=len(demands),
-                    expiration_days=expiration_days,
-                    waste_cost_rate=80.0
-                )
-                strategies.append(result['optimized_strategy']['purchase_schedule'])
-                scenarios.append({
-                    "demands": demands,
-                    "lead_times": lead_times,
-                    "initial_stock": initial_stock
-                })
-
-            # Evaluate each strategy in all scenarios
-            avg_costs = []
-            for strat_idx, strategy in enumerate(strategies):
-                total_cost = 0
-                for scenario in scenarios:
-                    total_cost += calculate_strategy_cost(
-                        strategy,
-                        scenario['demands'],
-                        scenario['lead_times'],
-                        scenario['initial_stock'],
-                        unit_cost,
-                        margin,
-                        100,
-                        0.02,
-                        2.0,
-                        expiration_days,
-                        80.0
-                    )
-                avg_cost = total_cost / len(scenarios) if scenarios else float('inf')
-                avg_costs.append(avg_cost)
-
-            # Select the best strategy
-            if avg_costs:
-                best_idx = int(np.argmin(avg_costs))
+                
+                # Build purchase schedule from database rows
+                purchase_schedule = []
+                for row in sku_rows:
+                    purchase_schedule.append({
+                        'day': row['day'],
+                        'quantity': row['order_quantity'],
+                        'delivery_day': row['delivery_day']
+                    })
+                
+                # Use the first row for summary metrics (same for all days of same SKU)
+                first_row = sku_rows[0]
                 best_strategies[sku] = {
-                    "best_iteration": best_idx + 1,
-                    "average_cost": avg_costs[best_idx],
-                    "strategy": strategies[best_idx]
+                    "best_iteration": 1,
+                    "average_cost": first_row['total_cost'],
+                    "strategy": purchase_schedule
                 }
-            else:
-                best_strategies[sku] = None
+            
+            # Build calendar matrix with actual dates
+            from datetime import datetime, timedelta
+            sku_list = sorted(best_strategies.keys())
+            forecast_days = results_rows[0]['forecast_days'] if results_rows else 90
+            start_date = datetime.now()  # Start from today
+            
+            # Always show full calendar (all forecast days)
+            calendar_matrix = []
+            for day in range(1, forecast_days + 1):
+                current_date = start_date + timedelta(days=day - 1)
+                row = {
+                    "day": day,
+                    "date": current_date.strftime('%Y-%m-%d'),
+                    "date_formatted": current_date.strftime('%b %d, %Y')
+                }
+                for sku in sku_list:
+                    row[sku] = ""
+                    info = best_strategies[sku]
+                    if info:
+                        for order in info["strategy"]:
+                            if order["day"] + 1 == day and order.get("quantity", 0) > 0:
+                                row[sku] = order["quantity"]
+                calendar_matrix.append(row)
 
-        # --- AQUÍ SIGUE TU CÓDIGO PARA CALENDAR_MATRIX ---
-        sku_list = sorted(best_strategies.keys())
-        max_days = max(
-            (order["day"] + 1 for info in best_strategies.values() if info for order in info["strategy"]),
-            default=30
-        )
-        calendar_matrix = []
-        for day in range(1, max_days + 1):
-            row = {"day": day}
-            for sku in sku_list:
-                row[sku] = ""
-                info = best_strategies[sku]
-                if info:
-                    for order in info["strategy"]:
-                        if order["day"] + 1 == day and order["quantity"] > 0:
-                            row[sku] = order["quantity"]
-            calendar_matrix.append(row)
-
-        return render_template(
-            "results.html",
-            best_strategies=best_strategies,
-            product_info=product_info,
-            sku_list=sku_list,
-            calendar_matrix=calendar_matrix,
-            show_solution=True
-        )
+            return render_template(
+                "results.html",
+                best_strategies=best_strategies,
+                product_info=product_info,
+                sku_list=sku_list,
+                calendar_matrix=calendar_matrix,
+                show_solution=True,
+                start_date=start_date.strftime('%Y-%m-%d')
+            )
+        
+        except Exception as e:
+            print(f"Error loading optimization results: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
+            return render_template(
+                "results.html",
+                error=f"Error loading optimization results: {str(e)}",
+                best_strategies={},
+                product_info=product_info,
+                sku_list=[],
+                calendar_matrix=[],
+                show_solution=False,
+                start_date=datetime.now().strftime('%Y-%m-%d')
+            )
     else:
         # Just show the page without solution
         return render_template(
@@ -2245,7 +2149,8 @@ def results():
             product_info=product_info,
             sku_list=[],
             calendar_matrix=[],
-            show_solution=False
+            show_solution=False,
+            start_date=datetime.now().strftime('%Y-%m-%d')
         )
 
 # ============================================================================
@@ -3532,6 +3437,151 @@ def debug_info():
 def simple_test():
     """Super simple test"""
     return "Hello World! Flask is working!"
+
+@app.route("/api/ml_forecast", methods=["POST"])
+def ml_forecast():
+    """ML-based demand forecasting endpoint"""
+    try:
+        data = request.get_json()
+        sku = data.get('sku')
+        days = data.get('days', 180)
+        
+        if not sku:
+            return jsonify({'error': 'SKU required'}), 400
+        
+        # Load forecaster
+        forecaster = DemandForecaster()
+        if not forecaster.load_models('ml_models.pkl'):
+            return jsonify({'error': 'Models not trained. Run ml_demand_forecast.py first'}), 500
+        
+        # Generate predictions
+        predictions = forecaster.predict_demand(sku, days=days)
+        
+        if not predictions:
+            return jsonify({'error': f'No model available for SKU {sku}'}), 404
+        
+        # Calculate summary statistics
+        demand_values = [p['predicted_demand'] for p in predictions]
+        summary = {
+            'sku': sku,
+            'forecast_days': days,
+            'total_demand': sum(demand_values),
+            'avg_daily_demand': np.mean(demand_values),
+            'min_demand': min(demand_values),
+            'max_demand': max(demand_values),
+            'std_demand': np.std(demand_values)
+        }
+        
+        return jsonify({
+            'status': 'success',
+            'summary': summary,
+            'predictions': predictions
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route("/api/ml_forecast_all", methods=["POST"])
+def ml_forecast_all():
+    """Generate forecasts for all SKUs and save to forecast table"""
+    try:
+        data = request.get_json() or {}
+        days = data.get('days', 180)
+        save_to_db = data.get('save', True)  # Save by default
+        
+        # Load forecaster
+        forecaster = DemandForecaster()
+        if not forecaster.load_models('ml_models.pkl'):
+            return jsonify({'error': 'Models not trained'}), 500
+        
+        # Get all SKUs
+        conn = sqlite3.connect('inventory.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT DISTINCT SKU FROM TRANSACTIONS ORDER BY SKU")
+        skus = [row[0] for row in cursor.fetchall()]
+        
+        # Clear old forecasts if saving
+        if save_to_db:
+            cursor.execute("DELETE FROM forecast")
+            conn.commit()
+        
+        results = []
+        forecast_inserts = []
+        
+        for sku in skus:
+            predictions = forecaster.predict_demand(sku, days=days)
+            if predictions:
+                demand_values = [p['predicted_demand'] for p in predictions]
+                
+                # Calculate monthly summaries
+                from collections import defaultdict
+                monthly = defaultdict(lambda: {'total': 0, 'days': 0, 'min': float('inf'), 'max': 0})
+                for pred in predictions:
+                    date_obj = datetime.strptime(pred['date'], '%Y-%m-%d')
+                    month_key = date_obj.strftime('%Y-%m')
+                    month_name = date_obj.strftime('%B %Y')
+                    monthly[month_key]['name'] = month_name
+                    monthly[month_key]['total'] += pred['predicted_demand']
+                    monthly[month_key]['days'] += 1
+                    monthly[month_key]['min'] = min(monthly[month_key]['min'], pred['predicted_demand'])
+                    monthly[month_key]['max'] = max(monthly[month_key]['max'], pred['predicted_demand'])
+                
+                monthly_summary = [
+                    {
+                        'month': data['name'],
+                        'days': data['days'],
+                        'total': round(data['total'], 2),
+                        'avg_daily': round(data['total'] / data['days'], 2),
+                        'min': round(data['min'], 2),
+                        'max': round(data['max'], 2)
+                    }
+                    for month_key, data in sorted(monthly.items())
+                ]
+                
+                results.append({
+                    'sku': sku,
+                    'forecast_days': days,
+                    'total_demand': round(sum(demand_values), 2),
+                    'avg_daily_demand': round(np.mean(demand_values), 2),
+                    'min_demand': round(min(demand_values), 2),
+                    'max_demand': round(max(demand_values), 2),
+                    'predictions': predictions[:30],  # First 30 days only
+                    'monthly_summary': monthly_summary
+                })
+                
+                # Prepare data for forecast table
+                if save_to_db:
+                    for pred in predictions:
+                        forecast_inserts.append((
+                            sku,
+                            predictions.index(pred) + 1,  # Day number
+                            pred['predicted_demand'],
+                            pred['confidence'],
+                            pred['date'],
+                            days,
+                            'LightGBM_v1'
+                        ))
+        
+        # Save to forecast table
+        if save_to_db and forecast_inserts:
+            cursor.executemany('''
+                INSERT INTO forecast (SKU, DAY, PREDICTED_DEMAND, CONFIDENCE, DATE, FORECAST_HORIZON, MODEL_VERSION)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', forecast_inserts)
+            conn.commit()
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'success',
+            'count': len(results),
+            'results': results,
+            'saved_to_db': save_to_db,
+            'total_predictions': len(forecast_inserts) if save_to_db else 0
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == "__main__":
     # For development

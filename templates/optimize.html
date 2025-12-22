@@ -79,8 +79,25 @@
                             </div>
                         </div>
                         <div class="bg-white numerro-border p-3" style="border-width:1px">
-                            <div class="flex items-start">
-                                <i class="fas fa-warehouse mt-1 mr-2" style="color:#22C0FF"></i>
+                            <div class="flex items-start">                                <i class="fas fa-calendar-alt mt-1 mr-2" style="color:#7033FF"></i>
+                                <div class="flex-1">
+                                    <label for="forecast_days" class="text-xs numerro-text-secondary mb-1 block">Forecast Horizon</label>
+                                    <div class="flex items-center">
+                                        <select id="forecast_days" 
+                                                name="forecast_days"
+                                                class="w-28 px-2 py-1 numerro-border text-sm focus:outline-none" 
+                                                style="border-radius:0;border-width:1px">
+                                            <option value="30">30 days</option>
+                                            <option value="60">60 days</option>
+                                            <option value="90" selected>90 days</option>
+                                        </select>
+                                    </div>
+                                    <div class="text-xs numerro-text-secondary mt-1">Planning horizon for optimization</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white numerro-border p-3" style="border-width:1px">
+                            <div class="flex items-start">                                <i class="fas fa-warehouse mt-1 mr-2" style="color:#22C0FF"></i>
                                 <div class="flex-1">
                                     <label for="holding_cost_rate" class="text-xs numerro-text-secondary mb-1 block">Holding Cost Rate</label>
                                     <div class="flex items-center">
@@ -202,7 +219,7 @@
                         <div class="text-xs numerro-text-secondary mt-1">SKUs Optimized</div>
                     </div>
                     <div class="text-center numerro-border p-4" style="background-color:rgba(112,51,255,0.1);border-radius:0;border-width:1px;border-color:#7033FF">
-                        <div class="text-3xl font-bold" style="color:#7033FF">{{ summary.simulation_days }}</div>
+                        <div class="text-3xl font-bold" style="color:#7033FF">{{ summary.simulation_days|default(90) }}</div>
                         <div class="text-xs numerro-text-secondary mt-1">Days Planned</div>
                     </div>
                     <div class="text-center numerro-border p-4" style="background-color:rgba(34,192,255,0.1);border-radius:0;border-width:1px;border-color:#22C0FF">
@@ -260,27 +277,31 @@
                 <div class="bg-white numerro-border shadow-sm mb-4" style="border-radius:0;border-width:1px">
                     <div class="flex items-center justify-between px-4 py-2 numerro-border" style="border-bottom-width:1px;background-color:#F6F8FC">
                         <div class="font-semibold numerro-text-primary">SKU: {{ sku }}
-                            {% if runs and runs[0].result.product_name and runs[0].result.product_name != 'Unknown' %}
-                                <span class="numerro-text-secondary font-normal">({{ runs[0].result.product_name }})</span>
+                            {% set first_run = runs | selectattr('iteration', 'defined') | first | default(none) %}
+                            {% if first_run and first_run.result is defined and first_run.result.product_name is defined and first_run.result.product_name != 'Unknown' %}
+                                <span class="numerro-text-secondary font-normal">({{ first_run.result.product_name }})</span>
                             {% endif %}
                         </div>
-                        <div class="text-xs numerro-text-secondary">{{ runs|length }} iterations</div>
+                        <div class="text-xs numerro-text-secondary">
+                            {{ summary.simulation_days|default(90) }} days horizon
+                        </div>
                     </div>
-                    {% if runs %}
+                    {% if runs is sequence %}
                     <div class="p-4 space-y-3" id="sku-{{ sku }}-iterations">
                         {% for run in runs %}
+                        {% if run is mapping and run.result is defined %}
                         <div class="numerro-border iteration-card" style="background-color:#F6F8FC;border-radius:0;border-width:1px">
                             <!-- Iteration Header (Clickable) -->
                             <button class="w-full px-4 py-2 numerro-border iteration-toggle hover:opacity-90 transition-colors" type="button" style="background-color:#F6F8FC;border-bottom-width:1px;border-radius:0">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <i class="fas fa-chevron-right numerro-text-secondary text-xs transition-transform"></i>
-                                        <span class="font-medium numerro-text-primary text-sm">Iteration {{ run.iteration }}</span>
+                                        <span class="font-medium numerro-text-primary text-sm"> Optimization Details</span>
                                     </div>
                                     <div class="flex items-center gap-4 text-xs">
-                                        <span class="numerro-text-secondary">Cost: <span class="font-semibold" style="color:#4E7CFF">${{ "{:,.0f}".format(run.result.optimized_strategy.total_cost) }}</span></span>
-                                        <span class="numerro-text-secondary">Orders: <span class="font-semibold" style="color:#22C0FF">{{ run.result.optimized_strategy.total_orders }}</span></span>
-                                        <span class="numerro-text-secondary">Service: <span class="font-semibold" style="color:#7033FF">{{ run.result.optimized_strategy.service_level }}%</span></span>
+                                        <span class="numerro-text-secondary">Cost: <span class="font-semibold" style="color:#4E7CFF">${{ "{:,.0f}".format(run.result.optimized_strategy.total_cost|default(0)) }}</span></span>
+                                        <span class="numerro-text-secondary">Orders: <span class="font-semibold" style="color:#22C0FF">{{ run.result.optimized_strategy.total_orders|default(0) }}</span></span>
+                                        <span class="numerro-text-secondary">Service: <span class="font-semibold" style="color:#7033FF">{{ "%.1f"|format(run.result.optimized_strategy.service_level|default(0)) }}%</span></span>
                                     </div>
                                 </div>
                             </button>
@@ -291,18 +312,18 @@
                                     <div class="numerro-border p-3" style="background-color:rgba(78,124,255,0.1);border-radius:0;border-width:1px;border-color:#4E7CFF">
                                         <div class="font-semibold mb-2 flex items-center text-xs" style="color:#4E7CFF"><i class="fas fa-cart-plus mr-2"></i>Order Details</div>
                                         <div class="grid grid-cols-2 gap-2 text-xs">
-                                            <div>Total Orders:<br><span class="font-bold numerro-text-primary">{{ run.result.optimized_strategy.total_orders }}</span></div>
-                                            <div>Total Quantity:<br><span class="font-bold numerro-text-primary">{{ "{:,}".format(run.result.optimized_strategy.total_quantity_ordered) }}</span></div>
-                                            <div>Avg Inventory:<br><span class="font-bold numerro-text-primary">{{ "{:,}".format(run.result.optimized_strategy.average_inventory|int) }} units</span></div>
-                                            <div>Stockout Days:<br><span class="font-bold {% if run.result.optimized_strategy.stockout_days > 0 %}style="color:#DC7653"{% else %}style="color:#22C0FF"{% endif %}">{{ run.result.optimized_strategy.stockout_days }}</span></div>
+                                            <div>Total Orders:<br><span class="font-bold numerro-text-primary">{{ run.result.optimized_strategy.total_orders|default(0) }}</span></div>
+                                            <div>Total Quantity:<br><span class="font-bold numerro-text-primary">{{ "{:,}".format(run.result.optimized_strategy.total_quantity_ordered|default(0)) }}</span></div>
+                                            <div>Avg Inventory:<br><span class="font-bold numerro-text-primary">{{ "{:,}".format(run.result.optimized_strategy.average_inventory|default(0)|int) }} units</span></div>
+                                            <div>Stockout Days:<br><span class="font-bold {% if run.result.optimized_strategy.stockout_days|default(0) > 0 %}style="color:#DC7653"{% else %}style="color:#22C0FF"{% endif %}">{{ run.result.optimized_strategy.stockout_days|default(0) }}</span></div>
                                         </div>
                                     </div>
                                     <!-- Performance Metrics -->
                                     <div class="numerro-border p-3" style="background-color:rgba(34,192,255,0.1);border-radius:0;border-width:1px;border-color:#22C0FF">
                                         <div class="font-semibold mb-2 flex items-center text-xs" style="color:#22C0FF"><i class="fas fa-graph-up mr-2"></i>Performance</div>
                                         <div class="grid grid-cols-2 gap-2 text-xs">
-                                            <div>Service Level:<br><span class="font-bold" style="color:#22C0FF">{{ run.result.optimized_strategy.service_level }}%</span></div>
-                                            <div>Optimized Cost:<br><span class="font-bold" style="color:#4E7CFF">${{ "{:,.0f}".format(run.result.optimized_strategy.total_cost) }}</span></div>
+                                            <div>Service Level:<br><span class="font-bold" style="color:#22C0FF">{{ "%.1f"|format(run.result.optimized_strategy.service_level|default(0)) }}%</span></div>
+                                            <div>Optimized Cost:<br><span class="font-bold" style="color:#4E7CFF">${{ "{:,.0f}".format(run.result.optimized_strategy.total_cost|default(0)) }}</span></div>
                                             <div class="col-span-2">Strategy Status:<br>
                                                 <div class="w-full numerro-border h-2 mt-1" style="background-color:#F6F8FC;border-radius:0">
                                                     <div class="h-2" style="width: {{ run.result.optimized_strategy.service_level|default(0)|float }}%;background-color:#22C0FF;border-radius:0"></div>
@@ -363,6 +384,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                         {% endfor %}
                     </div>
                     {% else %}
@@ -449,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to update summary stats based on filtered data
     function updateSummaryStats(selectedSku) {
         console.log('updateSummaryStats called with:', selectedSku);
-        const allData = {{ all_optimizations|tojson|safe }};
+        const allData = {{ (all_optimizations or {})|tojson|safe }};
         console.log('All data:', allData);
         
         if (!allData || Object.keys(allData).length === 0) {

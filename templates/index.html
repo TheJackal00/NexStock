@@ -9,10 +9,6 @@
 {% block main %}
 <div class="p-0 md:p-6" style="min-height:100vh">
     <!-- Page Header -->
-    <div class="mb-4 md:mb-8">
-        <h1 class="text-xl md:text-2xl font-semibold numerro-text-primary mb-1">Dashboard</h1>
-        <p class="text-xs md:text-sm numerro-text-secondary">Real-time inventory insights and system overview</p>
-    </div>
 
     <!-- Key Metrics Grid -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-4 md:mb-8">
@@ -162,11 +158,18 @@
 async function refreshAlertCards(){
     try{
         const res = await fetch('/api/alerts/summary');
-        if(!res.ok) return;
+        if(!res.ok) {
+            console.error('API response not OK:', res.status);
+            return;
+        }
         const data = await res.json();
+        console.log('Alert data received:', data);
+        
         document.getElementById('card-low-stock').textContent = data.low_stock_count || 0;
         document.getElementById('card-stock-breaks').textContent = data.stock_break_count || 0;
         document.getElementById('card-stagnated').textContent = data.stagnated_count || 0;
+        
+        console.log('Alert cards updated successfully');
     }catch(e){
         console.error('Failed to refresh alert cards', e);
     }
@@ -174,9 +177,19 @@ async function refreshAlertCards(){
 
 // Run once on load
 document.addEventListener('DOMContentLoaded', function(){
+    console.log('Dashboard loaded, fetching alerts...');
     refreshAlertCards();
     // Optionally refresh periodically
     setInterval(refreshAlertCards, 1000 * 60 * 2); // every 2 minutes
 });
+
+// Also try to load immediately in case DOMContentLoaded already fired
+if (document.readyState === 'loading') {
+    // Still loading, wait for DOMContentLoaded
+} else {
+    // DOM is ready
+    console.log('DOM already ready, fetching alerts now...');
+    refreshAlertCards();
+}
 </script>
 {% endblock %}
